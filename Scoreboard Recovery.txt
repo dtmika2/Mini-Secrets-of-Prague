@@ -1,0 +1,44 @@
+SCOREBOARD RECOVERY INSTRUCTIONS
+=================================
+
+If the live scoreboard goes blank (localStorage wiped), follow these steps:
+
+1. Open the Google Sheet — all scores are backed up there.
+   Columns: Timestamp | Name | Email | Score | Correct
+
+2. Open the quiz or scoreboard page in the browser.
+
+3. Press F12 to open DevTools, go to the Console tab.
+
+4. Paste the script below, filling in the rows array from the Sheet data.
+   (Copy each row as a { name, score, correct, date } object — omit the email.)
+
+----------------------------------------------------------------------
+
+const key = 'miniSecretsScores_v1';
+
+const recovered = [
+  { name: 'Alice',  score: 870, correct: 6, date: '30/6/2026' },
+  { name: 'Bob',    score: 530, correct: 4, date: '30/6/2026' },
+  // ... add one line per row from the Sheet ...
+];
+
+recovered.sort((a, b) => b.score - a.score || b.correct - a.correct);
+if (recovered.length > 100) recovered.length = 100;
+localStorage.setItem(key, JSON.stringify(recovered));
+
+console.log('Restored', recovered.length, 'scores.');
+
+----------------------------------------------------------------------
+
+5. Press Enter to run. The scoreboard will update immediately on next refresh.
+
+
+NOTES
+-----
+- The date format should match your locale (e.g. '30/6/2026' or '6/30/2026').
+- The score column in the Sheet includes the timer bonus — use that number as-is.
+- New scores submitted after the wipe are already in both localStorage and the Sheet,
+  so you only need to restore scores from BEFORE the wipe.
+- To wipe scores intentionally (e.g. after a test run):
+    localStorage.removeItem('miniSecretsScores_v1');

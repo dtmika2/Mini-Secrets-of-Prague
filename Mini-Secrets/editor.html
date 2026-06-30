@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scoreboard Editor</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cagliostro&family=Raleway:wght@300;400;500;600;700&display=swap');
+
+    @font-face {
+      font-family: 'Modern Antiqua';
+      src: url('modern-antiqua/ModernAntiqua-Regular.ttf') format('truetype');
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #070b12;
+      --gold:      #d4a84b;
+      --gold-dark: #9a6e10;
+      --text:      #e4dcc8;
+      --text-dim:  #8a7e68;
+      --correct:   #58c458;
+      --wrong:     #d45050;
+    }
+
+    html, body {
+      width: 100%; min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Raleway', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 6vh 5vw 8vh;
+      display: flex;
+      flex-direction: column;
+      gap: 3vh;
+    }
+
+    h1 {
+      font-family: 'Modern Antiqua', serif;
+      font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+      color: var(--gold);
+      letter-spacing: 0.22em;
+      text-align: center;
+      text-shadow: 0 0 30px rgba(212,168,75,0.3);
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212,168,75,0.4), transparent);
+    }
+
+    .status-bar {
+      font-family: 'Cagliostro', sans-serif;
+      font-size: clamp(0.85rem, 1.5vw, 1rem);
+      color: var(--text-dim);
+      text-align: center;
+      letter-spacing: 0.08em;
+      min-height: 1.4em;
+      transition: color 0.3s;
+    }
+    .status-bar.correct { color: var(--correct); }
+    .status-bar.wrong   { color: var(--wrong); }
+
+    .card {
+      border: 1px solid rgba(212,168,75,0.18);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.02);
+      padding: 3vh 4vw;
+      display: flex;
+      flex-direction: column;
+      gap: 1.4vh;
+    }
+
+    .card-title {
+      font-family: 'Modern Antiqua', serif;
+      font-size: clamp(1rem, 1.8vw, 1.3rem);
+      color: var(--gold);
+      letter-spacing: 0.15em;
+    }
+
+    .card-desc {
+      font-size: clamp(0.8rem, 1.3vw, 0.95rem);
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    .btn {
+      font-family: 'Modern Antiqua', serif;
+      font-size: clamp(0.85rem, 1.4vw, 1rem);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 0.8em 2em;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      align-self: flex-start;
+      transition: filter 0.15s, transform 0.08s;
+    }
+    .btn:hover  { filter: brightness(1.15); transform: translateY(-1px); }
+    .btn:active { filter: brightness(0.9);  transform: translateY(1px); }
+    .btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+    .btn-restore {
+      background: linear-gradient(160deg, #3a7e3a 0%, #2a5e2a 100%);
+      color: #c8f0c8;
+      border: 1px solid #1e4e1e;
+    }
+
+    .btn-wipe {
+      background: linear-gradient(160deg, #7e2a2a 0%, #5e1e1e 100%);
+      color: #f0c8c8;
+      border: 1px solid #4e1414;
+    }
+
+    /* score preview table */
+    .preview-wrap {
+      max-height: 38vh;
+      overflow-y: auto;
+      border: 1px solid rgba(212,168,75,0.12);
+      border-radius: 5px;
+    }
+    .preview-wrap::-webkit-scrollbar { width: 4px; }
+    .preview-wrap::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Cagliostro', sans-serif;
+      font-size: clamp(0.78rem, 1.3vw, 0.95rem);
+    }
+    thead { position: sticky; top: 0; background: #0e1521; }
+    th {
+      font-family: 'Modern Antiqua', serif;
+      color: var(--gold);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 0.85em;
+      padding: 0.7em 1em;
+      text-align: left;
+      border-bottom: 1px solid rgba(212,168,75,0.2);
+    }
+    td {
+      color: var(--text);
+      padding: 0.6em 1em;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    tr:last-child td { border-bottom: none; }
+    .empty-note {
+      padding: 2em;
+      text-align: center;
+      color: var(--text-dim);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <h1>SCOREBOARD EDITOR</h1>
+  <div class="divider"></div>
+  <p class="status-bar" id="status">—</p>
+
+  <!-- RESTORE -->
+  <div class="card">
+    <div class="card-title">Restore from Google Sheet</div>
+    <div class="card-desc">
+      Fetches all scores from the Google Sheet backup and loads them into local storage.
+      Use this after a wipe or if the scoreboard went blank.
+    </div>
+    <button class="btn btn-restore" id="btnRestore" onclick="restoreFromSheet()">
+      Restore Scores
+    </button>
+  </div>
+
+  <!-- WIPE -->
+  <div class="card">
+    <div class="card-title">Wipe Local Scoreboard</div>
+    <div class="card-desc">
+      Removes all scores from local storage only. The Google Sheet is not affected —
+      you can always restore from it afterwards.
+    </div>
+    <button class="btn btn-wipe" onclick="wipeLocal()">
+      Wipe Local Scores
+    </button>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="card">
+    <div class="card-title">Current Local Scores</div>
+    <div class="preview-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Name</th><th>Score</th><th>Correct</th><th>Date</th></tr>
+        </thead>
+        <tbody id="previewBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxLXdZtKG9qms5vDDaCjAlyxTuFxwTulS0PgXoQdIGG3YhK459dipX2rRyG66dYFa7A/exec';
+const STORE_KEY = 'miniSecretsScores_v1';
+const MAX_QS    = 7;
+
+function setStatus(msg, cls = '') {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status-bar ' + cls;
+}
+
+function loadLocal() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+  catch { return []; }
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function refreshPreview() {
+  const rows = loadLocal();
+  const tbody = document.getElementById('previewBody');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-note">No local scores.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map((r, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${esc(r.name)}</td>
+      <td>${r.score}</td>
+      <td>${r.correct} / ${MAX_QS}</td>
+      <td>${esc(r.date || '')}</td>
+    </tr>`).join('');
+}
+
+async function restoreFromSheet() {
+  const btn = document.getElementById('btnRestore');
+  btn.disabled = true;
+  setStatus('Fetching from Google Sheet…', '');
+  try {
+    const res    = await fetch(SHEET_URL, { redirect: 'follow' });
+    const scores = await res.json();
+    if (!Array.isArray(scores)) throw new Error('Unexpected response from sheet.');
+    scores.sort((a, b) => b.score - a.score || b.correct - a.correct);
+    if (scores.length > 100) scores.length = 100;
+    localStorage.setItem(STORE_KEY, JSON.stringify(scores));
+    setStatus(`Restored ${scores.length} score(s) successfully.`, 'correct');
+    refreshPreview();
+  } catch (err) {
+    setStatus('Restore failed: ' + err.message, 'wrong');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function wipeLocal() {
+  if (!confirm('Wipe all local scores?\n\nThis only clears local storage — the Google Sheet is untouched.')) return;
+  localStorage.removeItem(STORE_KEY);
+  setStatus('Local scoreboard wiped.', 'wrong');
+  refreshPreview();
+}
+
+refreshPreview();
+</script>
+</body>
+</html>
