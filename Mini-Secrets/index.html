@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Secrets of Prague — The Welcome Quiz</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cagliostro&family=Cinzel:wght@400;600;700;900&family=Raleway:wght@300;400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #070b12;
+      --bg2:         #0e1521;
+      --gold:        #d4a84b;
+      --gold-dark:   #9a6e10;
+      --gold-light:  #f0d080;
+      --text:        #e4dcc8;
+      --text-dim:    #8a7e68;
+      --btn-text:    #18090000;
+      --correct:     #58c458;
+      --wrong:       #d45050;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Raleway', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    #app {
+      width: 100vw; height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 20%, #141e32 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, #0c1428 0%, transparent 60%),
+        var(--bg);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── SCREEN BASE ── */
+    .screen {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5vh 5vw;
+      gap: 2.5vh;
+      animation: fadeUp 0.35s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── TYPOGRAPHY ── */
+    .heading {
+      font-family: 'Cinzel', serif;
+      font-weight: 900;
+      color: var(--gold);
+      text-align: center;
+      letter-spacing: 0.25em;
+      text-shadow: 0 0 40px rgba(212,168,75,0.35);
+    }
+    .heading-xl { font-size: clamp(2.8rem, 6.5vw, 5.5rem); }
+    .heading-lg { font-size: clamp(1.8rem, 3.8vw, 3rem); }
+    .heading-md { font-size: clamp(1.2rem, 2.2vw, 1.8rem); }
+
+    .subtext {
+      font-size: clamp(0.8rem, 1.5vw, 1.1rem);
+      color: var(--text-dim);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      width: min(500px, 60vw);
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212,168,75,0.5), transparent);
+    }
+    .divider-icon { color: var(--gold); font-size: 1.2rem; }
+
+    /* ── PARCHMENT BUTTON ── */
+    .parch {
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      color: #1c0e02;
+      background: linear-gradient(170deg,
+        #f0d07a 0%,
+        #d4a84b 18%,
+        #b87a10 50%,
+        #c8900a 78%,
+        #9a6500 100%
+      );
+      border: 2px solid #7a5210;
+      border-radius: 5px;
+      box-shadow:
+        0 5px 14px rgba(0,0,0,0.65),
+        inset 0 1px 0 rgba(255,245,180,0.55),
+        inset 0 -2px 0 rgba(60,30,0,0.35);
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      text-align: center;
+      transition: transform 0.08s, box-shadow 0.08s, filter 0.08s;
+      position: relative;
+      overflow: visible;
+    }
+    .shine-clip {
+      position: absolute; inset: 0;
+      overflow: hidden;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+    .shine-clip::before {
+      content: '';
+      position: absolute;
+      top: -10%;
+      left: -75%;
+      width: 45%;
+      height: 120%;
+      background: linear-gradient(
+        105deg,
+        transparent 15%,
+        rgba(255, 252, 220, 0.38) 50%,
+        transparent 85%
+      );
+      transform: skewX(-12deg);
+      animation: btnShine var(--shine-dur, 7s) ease-in-out infinite var(--shine-delay, 0s);
+      pointer-events: none;
+    }
+    .parch:disabled .shine-clip::before,
+    .opt-btn.state-dim .shine-clip::before,
+    .opt-btn.state-wrong .shine-clip::before,
+    .opt-btn.state-correct-reveal .shine-clip::before { opacity: 0; }
+
+
+    @keyframes btnShine {
+      0%        { left: -75%;  opacity: 0; }
+      6%        { opacity: 1; }
+      28%       { left: 120%;  opacity: 1; }
+      29%, 100% { left: 120%;  opacity: 0; }
+    }
+
+    /* ── CORNER SPARKLE VARIANT ── */
+    .no-gloss .shine-clip { display: none; }
+
+    .btn-sparkle {
+      position: absolute;
+      width: 2.2em;
+      height: 2.2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(1rem, 1.8vw, 1.4rem);
+      line-height: 1;
+      opacity: 0;
+      pointer-events: none;
+      color: rgba(255, 252, 200, 0.98);
+      text-shadow:
+        0 0 4px rgba(255, 240, 130, 1),
+        0 0 12px rgba(255, 210, 60, 0.85),
+        0 0 28px rgba(255, 170, 20, 0.5);
+      animation-duration: var(--sp-dur, 3s);
+      animation-timing-function: ease-in-out;
+      animation-delay: var(--sp-delay, 1s);
+      animation-iteration-count: 1;
+      animation-fill-mode: forwards;
+      z-index: 10;
+    }
+    .btn-sparkle.tl { top: -2px; left:  -2px; animation-name: cornerSparkleTL; }
+    .btn-sparkle.tr { top: -2px; right: -2px; animation-name: cornerSparkleTR; }
+
+    @keyframes cornerSparkleTL {
+      0%   { opacity: 0;   transform: translate(-50%,-50%) scale(0)    rotate(0deg);  }
+      8%   { opacity: 1;   transform: translate(-50%,-50%) scale(1.7)  rotate(6deg);  }
+      18%  { opacity: 0.7; transform: translate(-50%,-50%) scale(1.0)  rotate(-4deg); }
+      28%  { opacity: 1;   transform: translate(-50%,-50%) scale(1.35) rotate(5deg);  }
+      38%  { opacity: 0;   transform: translate(-50%,-50%) scale(0)    rotate(0deg);  }
+      100% { opacity: 0;   transform: translate(-50%,-50%) scale(0); }
+    }
+    @keyframes cornerSparkleTR {
+      0%   { opacity: 0;   transform: translate(50%,-50%) scale(0)    rotate(0deg);  }
+      8%   { opacity: 1;   transform: translate(50%,-50%) scale(1.7)  rotate(6deg);  }
+      18%  { opacity: 0.7; transform: translate(50%,-50%) scale(1.0)  rotate(-4deg); }
+      28%  { opacity: 1;   transform: translate(50%,-50%) scale(1.35) rotate(5deg);  }
+      38%  { opacity: 0;   transform: translate(50%,-50%) scale(0)    rotate(0deg);  }
+      100% { opacity: 0;   transform: translate(50%,-50%) scale(0); }
+    }
+
+    /* ── BACKGROUND PARTICLES ── */
+    #particles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .ptcl {
+      position: absolute;
+      opacity: 0;
+      animation: ptclFloat linear infinite;
+      pointer-events: none;
+      user-select: none;
+    }
+    @keyframes ptclFloat {
+      0%        { opacity: 0;    transform: translateY(0)    rotate(0deg)   scale(0.8); }
+      20%       { opacity: var(--po, 0.12); }
+      50%       { opacity: calc(var(--po, 0.12) * 0.45); transform: translateY(-35px) rotate(25deg)  scale(1.05); }
+      80%       { opacity: var(--po, 0.12); }
+      100%      { opacity: 0;    transform: translateY(-70px) rotate(55deg)  scale(0.8); }
+    }
+    .parch:not(:disabled):hover {
+      filter: brightness(1.12);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,245,180,0.55);
+    }
+    .parch:not(:disabled):active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+      filter: brightness(0.95);
+    }
+    .parch:disabled {
+      cursor: default;
+      opacity: 0.45;
+    }
+
+    .parch-xl {
+      font-size: clamp(1.15rem, 2.53vw, 1.84rem);
+      letter-spacing: 0.3em;
+      padding: 1.27em 4.03em;
+    }
+    .parch-md {
+      font-size: clamp(0.92rem, 1.61vw, 1.27rem);
+      letter-spacing: 0.2em;
+      padding: 0.98em 2.53em;
+    }
+
+    /* ── START SCREEN ── */
+    .start-screen { gap: 3.5vh; }
+
+    /* ── NICKNAME SCREEN ── */
+    .nick-label {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(0.98rem, 1.73vw, 1.32rem);
+      color: var(--text-dim);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .nick-input {
+      font-family: 'Cagliostro', 'Raleway', sans-serif;
+      font-weight: 400;
+      font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+      border: 2px solid var(--gold-dark);
+      border-radius: 5px;
+      padding: 0.6em 1.2em;
+      text-align: center;
+      width: min(480px, 58vw);
+      outline: none;
+      caret-color: var(--gold);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .nick-input::placeholder { color: rgba(138,126,104,0.5); }
+    .nick-input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 22px rgba(212,168,75,0.22);
+    }
+
+    /* ── QUESTION SCREEN ── */
+    .question-screen {
+      justify-content: flex-start;
+      padding: 0;
+      gap: 0;
+    }
+
+    .btn-abandon {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(0.71rem, 1.15vw, 0.94rem);
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      background: transparent;
+      border: 1px solid rgba(138,126,104,0.28);
+      border-radius: 4px;
+      padding: 0.35em 0.9em;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+    .btn-abandon:hover { color: var(--wrong); border-color: rgba(212,80,80,0.4); }
+
+    .q-topbar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.8vh 5vw 1.5vh;
+      border-bottom: 1px solid rgba(212,168,75,0.18);
+      flex-shrink: 0;
+    }
+    .q-num {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(0.92rem, 1.61vw, 1.27rem);
+      color: var(--text-dim);
+      letter-spacing: 0.18em;
+    }
+    .q-pts {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.06rem, 1.88vw, 1.44rem);
+      color: var(--gold);
+      letter-spacing: 0.1em;
+    }
+
+    .q-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2vh 6vw 0;
+      gap: 3vh;
+      width: 100%;
+      min-height: 0;
+    }
+
+    .q-text {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.5rem, 3.38vw, 2.73rem);
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      line-height: 1.55;
+      max-width: 82vw;
+    }
+
+    .q-star-row {
+      color: var(--gold);
+      font-size: clamp(1.2rem, 2.5vw, 2rem);
+      letter-spacing: 0.8em;
+      text-shadow: 0 0 18px rgba(212,168,75,0.5);
+      flex-shrink: 0;
+    }
+
+    .q-options-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: auto auto;
+      column-gap: 2.2vw;
+      row-gap: 0.6em;
+      width: 100%;
+    }
+
+    .opt-btn {
+      grid-row: span 2;
+      display: grid;
+      grid-template-rows: subgrid;
+      justify-items: center;
+      align-items: center;
+      padding: 1.1em 0.8em;
+      min-height: 10vh;
+      transition: transform 0.08s, box-shadow 0.08s, filter 0.08s,
+                  background 0.2s, border-color 0.2s;
+    }
+    .opt-letter {
+      font-size: clamp(1.82rem, 3.36vw, 2.8rem);
+      font-weight: 900;
+      color: #1c0e02;
+      line-height: 1;
+      align-self: center;
+    }
+    .opt-text {
+      font-family: 'Cagliostro', 'Raleway', sans-serif;
+      font-weight: 400;
+      font-size: clamp(1.58rem, 2.7vw, 2.13rem);
+      color: #2a1200;
+      text-align: center;
+      line-height: 1.35;
+      align-self: center;
+    }
+
+    /* correct answer AND player chose it — bright celebratory green */
+    .opt-btn.state-correct {
+      opacity: 1 !important;
+      background: linear-gradient(160deg, #a0f080 0%, #48c840 35%, #2ea02e 100%) !important;
+      border-color: #1a6a1a !important;
+      box-shadow: 0 4px 24px rgba(72,200,64,0.75), inset 0 1px 0 rgba(200,255,180,0.4) !important;
+    }
+    .opt-btn.state-correct .opt-letter,
+    .opt-btn.state-correct .opt-text { color: #041204 !important; }
+
+    /* correct answer revealed after player chose wrong — softer, informational green */
+    .opt-btn.state-correct-reveal {
+      opacity: 1 !important;
+      background: linear-gradient(160deg, #60a860 0%, #3a7e3a 40%, #2a602a 100%) !important;
+      border-color: #1e4e1e !important;
+      box-shadow: 0 4px 14px rgba(60,140,60,0.4) !important;
+    }
+    .opt-btn.state-correct-reveal .opt-letter,
+    .opt-btn.state-correct-reveal .opt-text { color: #c8f0c8 !important; }
+
+    .opt-btn.state-wrong {
+      opacity: 1 !important;
+      background: linear-gradient(160deg, #e87878 0%, #c03030 40%, #a02020 100%) !important;
+      border-color: #701818 !important;
+      box-shadow: 0 4px 18px rgba(200,50,50,0.55) !important;
+    }
+    .opt-btn.state-wrong .opt-letter,
+    .opt-btn.state-wrong .opt-text { color: #fff !important; }
+
+    .opt-btn.state-dim {
+      filter: brightness(0.45) saturate(0.4);
+    }
+
+    .q-footer {
+      flex-shrink: 0;
+      width: 100%;
+      padding: 1.5vh 5vw 2.5vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5vh;
+      min-height: 10vh;
+    }
+
+    .feedback-text {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(0.9rem, 1.7vw, 1.3rem);
+      letter-spacing: 0.08em;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .feedback-text.show { opacity: 1; transform: translateY(0); }
+    .feedback-text.correct { color: var(--correct); }
+    .feedback-text.wrong   { color: var(--wrong); }
+
+    .btn-next {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s 0.15s;
+      font-size: clamp(0.78rem, 1.35vw, 1rem);
+      letter-spacing: 0.25em;
+      padding: 0.75em 2.5em;
+    }
+    .btn-next.show { opacity: 1; pointer-events: auto; }
+
+    /* ── RESULT SCREEN ── */
+    .result-score {
+      font-family: 'Cinzel', serif;
+      font-weight: 900;
+      font-size: clamp(4rem, 11vw, 8.5rem);
+      color: var(--gold);
+      line-height: 1;
+      text-shadow: 0 0 60px rgba(212,168,75,0.5);
+    }
+    .result-max {
+      font-size: clamp(0.8rem, 1.4vw, 1.05rem);
+      color: var(--text-dim);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: -0.5em;
+    }
+    .result-player {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.1rem, 2.2vw, 1.8rem);
+      color: var(--gold-light);
+      letter-spacing: 0.1em;
+    }
+    .result-correct-line {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(0.95rem, 1.8vw, 1.4rem);
+      color: var(--text);
+    }
+    .result-correct-line strong { color: var(--correct); }
+    .result-btns { display: flex; gap: 2.5vw; flex-wrap: wrap; justify-content: center; }
+
+    /* ── SCOREBOARD SCREEN ── */
+    .sb-wrap {
+      width: min(920px, 88vw);
+      max-height: 62vh;
+      overflow-y: auto;
+      border: 1px solid rgba(212,168,75,0.2);
+      border-radius: 6px;
+      background: rgba(255,255,255,0.02);
+    }
+    .sb-wrap::-webkit-scrollbar { width: 5px; }
+    .sb-wrap::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+
+    .sb-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .sb-table thead {
+      position: sticky;
+      top: 0;
+      background: rgba(14,21,33,0.96);
+      backdrop-filter: blur(4px);
+    }
+    .sb-table th {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(0.72rem, 1.2vw, 0.95rem);
+      color: var(--gold);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 0.9em 1.4em;
+      text-align: left;
+      border-bottom: 1px solid rgba(212,168,75,0.25);
+    }
+    .sb-table td {
+      font-family: 'Cagliostro', 'Raleway', sans-serif;
+      font-size: clamp(0.85rem, 1.4vw, 1.08rem);
+      color: var(--text);
+      padding: 0.75em 1.4em;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .sb-table tr:last-child td { border-bottom: none; }
+    .sb-table tbody tr:hover td { background: rgba(255,255,255,0.025); }
+
+    .sb-table .me td {
+      background: rgba(212,168,75,0.1);
+      color: var(--gold-light);
+      font-weight: 600;
+    }
+    .sb-table .r1 td:first-child { color: #ffd700; font-size: 1.1em; }
+    .sb-table .r2 td:first-child { color: #c0c0c0; }
+    .sb-table .r3 td:first-child { color: #cd7f32; }
+
+    .sb-empty {
+      padding: 3em;
+      text-align: center;
+      color: var(--text-dim);
+      font-style: italic;
+      font-size: 0.95rem;
+    }
+
+    /* ── DECORATIVE CORNER IMAGE ── */
+    .deco-img {
+      position: absolute;
+      bottom: 0;
+      height: 52vh;
+      width: auto;
+      opacity: 0.7;
+      z-index: -1;
+      pointer-events: none;
+      filter:
+        drop-shadow(0 0 14px rgba(212,168,75,0.30))
+        drop-shadow(0 0 40px rgba(212,168,75,0.15));
+      animation: decoFadeIn 0.5s ease forwards;
+    }
+    @keyframes decoFadeIn {
+      from { opacity: 0; transform: var(--deco-flip) translateY(12px); }
+      to   { opacity: 0.7; transform: var(--deco-flip) translateY(0); }
+    }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ─── DATA ─── */
+const QS = [
+  {
+    text: "According to legend, Charles Bridge is protected from destruction by:",
+    opts: [
+      "mythical water creatures from river",
+      "numerical symbolism",
+      "a church blessing"
+    ],
+    correct: 1, pts: 5
+  },
+  {
+    text: "Which film was directed by Miloš Forman and filmed in Prague?",
+    opts: ["Valmont", "Sin City", "Amadeus"],
+    correct: 2, pts: 7
+  },
+  {
+    text: "Petřín Lookout Tower is a scaled-down version of the Eiffel Tower at approximately:",
+    opts: ["1 : 2", "1 : 5", "1 : 8"],
+    correct: 1, pts: 7
+  },
+  {
+    text: "The Czech Republic is among the world leaders in the consumption of:",
+    opts: ["cranberry lemonade", "orange Fanta", "beer"],
+    correct: 2, pts: 11
+  },
+  {
+    text: "Prague's Astronomical Clock displays:",
+    opts: ["2 different times", "4 different times", "6 different times"],
+    correct: 1, pts: 11
+  },
+  {
+    text: "Jaromír Jágr played professionally in which North American league?",
+    opts: ["NBA", "NHL", "NFL"],
+    correct: 1, pts: 16
+  },
+  {
+    text: "Dan Brown wrote a book about Prague titled:",
+    opts: [
+      "Prague of a Hundred Spires",
+      "Golden Lane",
+      "The Secret of All Secrets"
+    ],
+    correct: 2, pts: 16
+  }
+];
+
+const MAX_PTS    = QS.reduce((s, q) => s + q.pts, 0); // 73
+const LETTERS    = ['A', 'B', 'C'];
+const STORE_KEY  = 'miniSecretsScores_v1';
+
+/* ─── STATE ─── */
+let S = {
+  screen:       'start',  // start | nickname | question | result | scoreboard
+  name:         '',
+  curQ:         0,
+  score:        0,
+  correct:      0,
+  answered:     false,
+  chosen:       null,
+  meIdx:        null
+};
+
+function resetQuiz() {
+  S.curQ = 0; S.score = 0; S.correct = 0;
+  S.answered = false; S.chosen = null;
+}
+
+/* ─── STORAGE ─── */
+function loadScores() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+  catch { return []; }
+}
+
+function pushScore() {
+  const rows = loadScores();
+  rows.push({ name: S.name, score: S.score, correct: S.correct,
+              date: new Date().toLocaleDateString() });
+  rows.sort((a, b) => b.score - a.score || b.correct - a.correct);
+  if (rows.length > 100) rows.length = 100;
+  localStorage.setItem(STORE_KEY, JSON.stringify(rows));
+  S.meIdx = rows.findIndex(r => r.name === S.name && r.score === S.score && r.correct === S.correct);
+}
+
+/* ─── RENDER ─── */
+const app = document.getElementById('app');
+
+function render() {
+  const prev = app.querySelector('.screen');
+  if (prev) prev.remove();
+  ({ start, nickname, question, result, scoreboard })[S.screen]();
+  randomizeShine();
+  maybeShowDecorativeImage();
+}
+
+const DECO_IMGS = [
+  'Decorative images/image-removebg-preview (3).png',
+  'Decorative images/image-removebg-preview (4).png',
+  'Decorative images/image-removebg-preview (5).png',
+  'Decorative images/image-removebg-preview (6).png',
+];
+
+function maybeShowDecorativeImage() {
+  const prev = app.querySelector('.deco-img');
+  if (prev) prev.remove();
+
+  let src, isLeft, flip;
+
+  if (S.screen === 'result') {
+    src    = DECO_IMGS[3];
+    isLeft = true;
+    flip   = 'scaleX(-1)';
+  } else if (S.screen === 'start') {
+    src    = DECO_IMGS[Math.floor(Math.random() * DECO_IMGS.length)];
+    isLeft = Math.random() < 0.5;
+    flip   = Math.random() < 0.5 ? 'scaleX(-1)' : 'scaleX(1)';
+  } else {
+    if (Math.random() > 0.30) return;
+    src    = DECO_IMGS[Math.floor(Math.random() * DECO_IMGS.length)];
+    isLeft = Math.random() < 0.5;
+    flip   = Math.random() < 0.5 ? 'scaleX(-1)' : 'scaleX(1)';
+  }
+
+  const img = document.createElement('img');
+  img.className = 'deco-img';
+  img.src = src;
+  img.style.setProperty('--deco-flip', flip);
+  img.style[isLeft ? 'left' : 'right'] = '10%';
+
+  app.appendChild(img);
+}
+
+function randomizeShine() {
+  app.querySelectorAll('.parch').forEach(btn => {
+    if (!btn.querySelector('.shine-clip')) {
+      const clip = document.createElement('span');
+      clip.className = 'shine-clip';
+      btn.prepend(clip);
+    }
+    const durVal = 8 + Math.random() * 8;
+    const delay  = (Math.random() * durVal).toFixed(2) + 's';
+    const dur    = durVal.toFixed(2) + 's';
+    btn.style.setProperty('--shine-delay', delay);
+    btn.style.setProperty('--shine-dur',   dur);
+  });
+  assignSparkles();
+}
+
+function assignSparkles(prevBtn) {
+  const btns = [...app.querySelectorAll('.parch')];
+  if (!btns.length) return;
+
+  // Clear all existing sparkles
+  btns.forEach(btn => {
+    btn.querySelectorAll('.btn-sparkle').forEach(el => el.remove());
+    btn.classList.remove('no-gloss');
+  });
+
+  // Always pick a button, but not the same one as last time
+  const eligible = prevBtn ? btns.filter(b => b !== prevBtn) : btns;
+  const target   = eligible[Math.floor(Math.random() * eligible.length)];
+
+  target.classList.add('no-gloss');
+  const spDur   = (5 + Math.random() * 3).toFixed(2) + 's';
+  const spDelay = (0.5 + Math.random() * 3.5).toFixed(2) + 's';
+  const corner  = Math.random() > 0.5 ? 'tr' : 'tl';
+  const sp = document.createElement('span');
+  sp.className   = 'btn-sparkle ' + corner;
+  sp.textContent = '✦';
+  sp.style.setProperty('--sp-dur',   spDur);
+  sp.style.setProperty('--sp-delay', spDelay);
+  sp.addEventListener('animationend', () => {
+    setTimeout(() => assignSparkles(target), 6000 + Math.random() * 8000);
+  }, { once: true });
+  target.appendChild(sp);
+}
+
+/* START */
+function start() {
+  const s = mk('div', 'screen start-screen');
+  s.innerHTML = `
+    <h1 class="heading heading-xl">SECRETS OF PRAGUE</h1>
+    <p class="subtext">The Welcome Quiz</p>
+    <div class="divider"><span class="divider-icon">✦</span></div>
+    <button class="parch parch-xl" id="bStart">START QUIZ</button>
+    <button class="parch parch-md" id="bStartSB" style="margin-top:-0.8vh">SEE SCOREBOARD</button>
+  `;
+  app.appendChild(s);
+  s.querySelector('#bStart').onclick = () => { S.screen = 'nickname'; render(); };
+  s.querySelector('#bStartSB').onclick = () => { S.screen = 'scoreboard'; render(); };
+}
+
+/* NICKNAME */
+function nickname() {
+  const s = mk('div', 'screen');
+  s.style.gap = '3vh';
+  s.innerHTML = `
+    <h1 class="heading heading-lg">ENTER YOUR NAME</h1>
+    <div class="divider"><span class="divider-icon">✦</span></div>
+    <label class="nick-label" for="nInput">Your nickname</label>
+    <input id="nInput" class="nick-input" type="text" maxlength="24"
+           autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"
+           placeholder="type here…" value="${esc(S.name)}">
+    <button class="parch parch-xl" id="bBegin" ${S.name.trim() ? '' : 'disabled'}>BEGIN</button>
+  `;
+  app.appendChild(s);
+
+  const inp = s.querySelector('#nInput');
+  const btn = s.querySelector('#bBegin');
+  inp.oninput = () => { S.name = inp.value; btn.disabled = !inp.value.trim(); };
+  inp.onkeydown = e => { if (e.key === 'Enter' && inp.value.trim()) go(); };
+  btn.onclick = go;
+  setTimeout(() => inp.focus(), 60);
+
+  function go() {
+    if (!inp.value.trim()) return;
+    S.name = inp.value.trim();
+    resetQuiz();
+    S.screen = 'question';
+    render();
+  }
+}
+
+/* QUESTION */
+function question() {
+  const q = QS[S.curQ];
+  const s = mk('div', 'screen question-screen');
+  s.innerHTML = `
+    <div class="q-topbar">
+      <span class="q-num">QUESTION ${S.curQ + 1} / ${QS.length}</span>
+      <span class="q-pts">★ ${q.pts} POINTS</span>
+      <button class="btn-abandon" id="bAbandon">✕ ABANDON</button>
+    </div>
+
+    <div class="q-body">
+      <p class="q-text">${esc(q.text)}</p>
+      <div class="q-star-divider">✦ ✦ ✦</div>
+      <div class="q-options-grid" id="optGrid">
+        ${q.opts.map((o, i) => `
+          <button class="parch opt-btn" data-i="${i}" ${S.answered ? 'disabled' : ''}>
+            <span class="opt-letter">${LETTERS[i]}</span>
+            <span class="opt-text">${esc(o.charAt(0).toUpperCase() + o.slice(1))}</span>
+          </button>`).join('')}
+      </div>
+    </div>
+
+    <div class="q-footer">
+      <p class="feedback-text" id="fb"></p>
+      <button class="parch parch-md btn-next" id="bNext">
+        ${S.curQ < QS.length - 1 ? 'NEXT →' : 'SEE RESULTS'}
+      </button>
+    </div>
+  `;
+  app.appendChild(s);
+
+  if (S.answered) applyHighlight(s, q, S.chosen);
+
+  s.querySelector('#bAbandon').onclick = () => { S.name = ''; resetQuiz(); S.screen = 'start'; render(); };
+  s.querySelectorAll('.opt-btn').forEach(b => {
+    b.onclick = () => answer(s, q, +b.dataset.i);
+  });
+  s.querySelector('#bNext').onclick = advance;
+}
+
+function answer(s, q, idx) {
+  if (S.answered) return;
+  S.answered = true; S.chosen = idx;
+  const ok = idx === q.correct;
+  if (ok) { S.score += q.pts; S.correct++; }
+  s.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+  applyHighlight(s, q, idx);
+  const fb = s.querySelector('#fb');
+  fb.textContent = ok
+    ? `Correct! You earn ${q.pts} point${q.pts > 1 ? 's' : ''}.`
+    : `Wrong. The correct answer was ${LETTERS[q.correct]}.`;
+  fb.className = `feedback-text show ${ok ? 'correct' : 'wrong'}`;
+  s.querySelector('#bNext').classList.add('show');
+}
+
+function applyHighlight(s, q, chosen) {
+  const gotIt = chosen === q.correct;
+  s.querySelectorAll('.opt-btn').forEach((b, i) => {
+    if (i === q.correct)  b.classList.add(gotIt ? 'state-correct' : 'state-correct-reveal');
+    else if (i === chosen) b.classList.add('state-wrong');
+    else                   b.classList.add('state-dim');
+  });
+}
+
+function advance() {
+  if (S.curQ < QS.length - 1) {
+    S.curQ++; S.answered = false; S.chosen = null;
+    S.screen = 'question'; render();
+  } else {
+    pushScore();
+    S.screen = 'result'; render();
+  }
+}
+
+/* RESULT */
+function result() {
+  const s = mk('div', 'screen');
+  s.style.gap = '2.2vh';
+  s.innerHTML = `
+    <h1 class="heading heading-lg">QUIZ COMPLETE</h1>
+    <p class="result-player">${esc(S.name)}</p>
+    <div class="divider"><span class="divider-icon">✦</span></div>
+    <div class="result-score">${S.score}</div>
+    <p class="result-max">out of ${MAX_PTS} points</p>
+    <p class="result-correct-line">
+      Correct answers: <strong>${S.correct} / ${QS.length}</strong>
+    </p>
+    <div class="result-btns">
+      <button class="parch parch-md" id="bSB">SEE SCOREBOARD</button>
+      <button class="parch parch-md" id="bPA">PLAY AGAIN</button>
+    </div>
+  `;
+  app.appendChild(s);
+  s.querySelector('#bSB').onclick = () => { S.screen = 'scoreboard'; render(); };
+  s.querySelector('#bPA').onclick = playAgain;
+}
+
+/* SCOREBOARD */
+function scoreboard() {
+  const rows  = loadScores();
+  const s     = mk('div', 'screen');
+  s.style.gap = '2.2vh';
+
+  let tbody = '';
+  if (!rows.length) {
+    tbody = `<tr><td colspan="4" class="sb-empty">No scores yet — be the first!</td></tr>`;
+  } else {
+    rows.forEach((r, i) => {
+      const me    = i === S.meIdx ? 'me' : '';
+      const rank  = ['', 'r1', 'r2', 'r3'][i] || '';
+      tbody += `<tr class="${me} ${rank}">
+        <td>${i + 1}</td>
+        <td>${esc(r.name)}</td>
+        <td>${r.score}</td>
+        <td>${r.correct} / ${QS.length}</td>
+      </tr>`;
+    });
+  }
+
+  s.innerHTML = `
+    <h1 class="heading heading-lg">SCOREBOARD</h1>
+    <div class="divider"><span class="divider-icon">✦</span></div>
+    <div class="sb-wrap">
+      <table class="sb-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Name</th><th>Points</th><th>Correct</th>
+          </tr>
+        </thead>
+        <tbody>${tbody}</tbody>
+      </table>
+    </div>
+    <button class="parch parch-md" id="bPA">PLAY AGAIN</button>
+  `;
+  app.appendChild(s);
+  s.querySelector('#bPA').onclick = playAgain;
+
+  const me = s.querySelector('.me');
+  if (me) setTimeout(() => me.scrollIntoView({ block: 'center', behavior: 'smooth' }), 120);
+}
+
+/* ─── HELPERS ─── */
+function playAgain() {
+  S.name = ''; resetQuiz();
+  S.screen = 'start'; render();
+}
+
+function mk(tag, cls) {
+  const el = document.createElement(tag);
+  if (cls) el.className = cls;
+  return el;
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* ─── PARTICLES ─── */
+function initParticles() {
+  const c = document.createElement('div');
+  c.id = 'particles';
+  document.getElementById('app').appendChild(c);
+
+  const syms   = ['✦', '✦', '✦', '✧', '·', '·'];
+  const colors = ['#d4a84b', '#e8c870', '#c8a040', '#fff8e8'];
+
+  for (let i = 0; i < 16; i++) {
+    const p   = document.createElement('span');
+    p.className  = 'ptcl';
+    p.textContent = syms[i % syms.length];
+    const opacity = (0.55 + Math.random() * 0.4).toFixed(2);
+    p.style.cssText = [
+      `left:${(Math.random() * 97).toFixed(1)}vw`,
+      `top:${(Math.random() * 97).toFixed(1)}vh`,
+      `font-size:${(0.4 + Math.random() * 0.85).toFixed(2)}rem`,
+      `color:${colors[Math.floor(Math.random() * colors.length)]}`,
+      `animation-delay:${(Math.random() * 14).toFixed(1)}s`,
+      `animation-duration:${(9 + Math.random() * 11).toFixed(1)}s`,
+      `--po:${opacity}`
+    ].join(';');
+    c.appendChild(p);
+  }
+}
+
+/* ─── BOOT ─── */
+initParticles();
+render();
+</script>
+</body>
+</html>
