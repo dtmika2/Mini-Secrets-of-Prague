@@ -79,7 +79,7 @@
       letter-spacing: 0.25em;
       text-shadow: 0 0 40px rgba(212,168,75,0.35);
     }
-    .heading-xl { font-size: clamp(2.8rem, 6.5vw, 5.5rem); }
+    .heading-xl { font-size: clamp(3rem, 6.8vw, 5.7rem); }
     .heading-lg { font-size: clamp(1.8rem, 3.8vw, 3rem); }
     .heading-md { font-size: clamp(1.2rem, 2.2vw, 1.8rem); }
 
@@ -383,7 +383,7 @@
     .q-text {
       font-family: 'Modern Antiqua', serif;
       font-size: clamp(1.5rem, 3.38vw, 2.73rem);
-      font-weight: 600;
+      font-weight: 400;
       color: #fff;
       text-align: center;
       line-height: 1.55;
@@ -591,6 +591,18 @@
       font-size: 0.95rem;
     }
 
+    /* ── FIXED LOGO ── */
+    #corner-logo {
+      position: fixed;
+      bottom: 1.5vh;
+      left: 1.5vw;
+      height: clamp(80px, 12vh, 160px);
+      width: auto;
+      opacity: 0.75;
+      pointer-events: none;
+      z-index: 10;
+    }
+
     /* ── DECORATIVE CORNER IMAGE ── */
     .deco-img {
       position: absolute;
@@ -612,6 +624,7 @@
   </style>
 </head>
 <body>
+<img id="corner-logo" src="Logo.png" alt="Logo">
 <div id="app"></div>
 <script>
 /* ─── DATA ─── */
@@ -800,8 +813,8 @@ function assignSparkles(prevBtn) {
 function start() {
   const s = mk('div', 'screen start-screen');
   s.innerHTML = `
-    <h1 class="heading heading-xl">SECRETS OF PRAGUE</h1>
-    <p class="subtext">The Welcome Quiz</p>
+    <h1 class="heading heading-xl">Secrets of Prague</h1>
+    <p class="subtext">The IMS Evening Quiz</p>
     <div class="divider"><span class="divider-icon">✦</span></div>
     <button class="parch parch-xl" id="bStart">START QUIZ</button>
     <button class="parch parch-md" id="bStartSB" style="margin-top:-0.8vh">SEE SCOREBOARD</button>
@@ -893,18 +906,17 @@ function answer(s, q, idx) {
   clearInterval(S.timerInterval);
   S.answered = true; S.chosen = idx;
   const ok = idx === q.correct;
-  const bonus = ok ? S.secondsLeft : 0;
+  const bonus = ok ? S.secondsLeft * 3 : 0;
   if (ok) { S.score += q.pts + bonus; S.correct++; }
   s.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
   applyHighlight(s, q, idx);
   const fb = s.querySelector('#fb');
-  const totalEarned = q.pts + bonus;
   if (idx === -1) {
     fb.textContent = `Time's up! The correct answer was ${LETTERS[q.correct]}.`;
+  } else if (ok) {
+    fb.innerHTML = `Correct! You earn ${q.pts + bonus} points.<br>+${q.pts} pts for the correct answer<br>+${bonus} pts from ${S.secondsLeft}s on the clock`;
   } else {
-    fb.textContent = ok
-      ? `Correct! You earn ${totalEarned} point${totalEarned !== 1 ? 's' : ''}.`
-      : `Wrong. The correct answer was ${LETTERS[q.correct]}.`;
+    fb.textContent = `Wrong. The correct answer was ${LETTERS[q.correct]}.`;
   }
   fb.className = `feedback-text show ${ok ? 'correct' : 'wrong'}`;
   s.querySelector('#bNext').classList.add('show');
