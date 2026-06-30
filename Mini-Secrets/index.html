@@ -677,11 +677,13 @@ const QS = [
 const MAX_PTS    = QS.reduce((s, q) => s + q.pts, 0); // 730
 const LETTERS    = ['A', 'B', 'C'];
 const STORE_KEY  = 'miniSecretsScores_v1';
+const SHEET_URL  = 'https://script.google.com/macros/s/AKfycbxLXdZtKG9qms5vDDaCjAlyxTuFxwTulS0PgXoQdIGG3YhK459dipX2rRyG66dYFa7A/exec';
 
 /* ─── STATE ─── */
 let S = {
-  screen:       'start',  // start | nickname | question | result | scoreboard
+  screen:       'start',  // start | nickname | email | question | result | scoreboard
   name:         '',
+  email:        '',
   curQ:         0,
   score:        0,
   correct:      0,
@@ -698,6 +700,7 @@ function resetQuiz() {
   S.secondsLeft = 0;
   S.curQ = 0; S.score = 0; S.correct = 0;
   S.answered = false; S.chosen = null;
+  S.email = '';
 }
 
 /* ─── STORAGE ─── */
@@ -714,6 +717,16 @@ function pushScore() {
   if (rows.length > 100) rows.length = 100;
   localStorage.setItem(STORE_KEY, JSON.stringify(rows));
   S.meIdx = rows.findIndex(r => r.name === S.name && r.score === S.score && r.correct === S.correct);
+  sendToSheet({ name: S.name, email: S.email, score: S.score, correct: S.correct });
+}
+
+function sendToSheet(payload) {
+  if (!SHEET_URL || SHEET_URL.startsWith('YOUR_')) return;
+  fetch(SHEET_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify(payload)
+  }).catch(() => {});
 }
 
 /* ─── RENDER ─── */
@@ -722,7 +735,7 @@ const app = document.getElementById('app');
 function render() {
   const prev = app.querySelector('.screen');
   if (prev) prev.remove();
-  ({ start, nickname, question, result, scoreboard })[S.screen]();
+  ({ start, nickname, email, question, result, scoreboard })[S.screen]();
   randomizeShine();
   maybeShowDecorativeImage();
 }
@@ -850,9 +863,38 @@ function nickname() {
     if (!inp.value.trim()) return;
     S.name = inp.value.trim();
     resetQuiz();
+    S.screen = 'email';
+    render();
+  }
+}
+
+/* EMAIL */
+function email() {
+  const s = mk('div', 'screen');
+  s.style.gap = '3vh';
+  s.innerHTML = `
+    <h1 class="heading heading-lg">STAY IN TOUCH</h1>
+    <div class="divider"><span class="divider-icon">✦</span></div>
+    <label class="nick-label" for="eInput">Your email <span style="opacity:0.45;font-size:0.85em">(optional)</span></label>
+    <input id="eInput" class="nick-input" type="email" maxlength="120"
+           autocomplete="email" placeholder="you@example.com" value="${esc(S.email)}">
+    <button class="parch parch-xl" id="bGo">BEGIN</button>
+    <button id="bSkip" style="background:none;border:none;color:var(--text-dim);
+            font-family:'Modern Antiqua',serif;font-size:clamp(0.75rem,1.3vw,1rem);
+            letter-spacing:0.2em;cursor:pointer;text-transform:uppercase;opacity:0.6">Skip</button>
+  `;
+  app.appendChild(s);
+
+  const inp = s.querySelector('#eInput');
+  function go() {
+    S.email = inp.value.trim();
     S.screen = 'question';
     render();
   }
+  s.querySelector('#bGo').onclick   = go;
+  s.querySelector('#bSkip').onclick = go;
+  inp.onkeydown = e => { if (e.key === 'Enter') go(); };
+  setTimeout(() => inp.focus(), 60);
 }
 
 /* QUESTION */
