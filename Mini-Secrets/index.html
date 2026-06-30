@@ -7,6 +7,13 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cagliostro&family=Cinzel:wght@400;600;700;900&family=Raleway:wght@300;400;500;600;700&display=swap');
 
+    @font-face {
+      font-family: 'Modern Antiqua';
+      src: url('modern-antiqua/ModernAntiqua-Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -65,7 +72,7 @@
 
     /* ── TYPOGRAPHY ── */
     .heading {
-      font-family: 'Cinzel', serif;
+      font-family: 'Modern Antiqua', serif;
       font-weight: 900;
       color: var(--gold);
       text-align: center;
@@ -101,7 +108,7 @@
 
     /* ── PARCHMENT BUTTON ── */
     .parch {
-      font-family: 'Cinzel', serif;
+      font-family: 'Modern Antiqua', serif;
       font-weight: 700;
       color: #1c0e02;
       background: linear-gradient(170deg,
@@ -260,7 +267,7 @@
 
     /* ── NICKNAME SCREEN ── */
     .nick-label {
-      font-family: 'Cinzel', serif;
+      font-family: 'Modern Antiqua', serif;
       font-size: clamp(0.98rem, 1.73vw, 1.32rem);
       color: var(--text-dim);
       letter-spacing: 0.2em;
@@ -295,7 +302,7 @@
     }
 
     .btn-abandon {
-      font-family: 'Cinzel', serif;
+      font-family: 'Modern Antiqua', serif;
       font-size: clamp(0.71rem, 1.15vw, 0.94rem);
       letter-spacing: 0.12em;
       color: var(--text-dim);
@@ -314,21 +321,51 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.8vh 5vw 1.5vh;
+      padding: 2.16vh 6vw 1.8vh;
       border-bottom: 1px solid rgba(212,168,75,0.18);
       flex-shrink: 0;
     }
     .q-num {
-      font-family: 'Cinzel', serif;
-      font-size: clamp(0.92rem, 1.61vw, 1.27rem);
+      font-family: 'Modern Antiqua', serif;
+      font-size: clamp(1.1rem, 1.93vw, 1.52rem);
       color: var(--text-dim);
       letter-spacing: 0.18em;
     }
     .q-pts {
-      font-family: 'Cinzel', serif;
-      font-size: clamp(1.06rem, 1.88vw, 1.44rem);
+      font-family: 'Modern Antiqua', serif;
+      font-size: clamp(1.27rem, 2.26vw, 1.73rem);
       color: var(--gold);
       letter-spacing: 0.1em;
+    }
+
+    .timer-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.5vh 6vw 0.4vh;
+      flex-shrink: 0;
+      width: 100%;
+    }
+    .timer-count {
+      font-family: 'Modern Antiqua', serif;
+      font-size: clamp(1rem, 1.8vw, 1.4rem);
+      color: #d45050;
+      min-width: 2ch;
+      text-align: right;
+    }
+    .timer-track {
+      flex: 1;
+      height: 8px;
+      background: rgba(212,168,75,0.15);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .timer-fill {
+      height: 100%;
+      width: 100%;
+      background: #d45050;
+      border-radius: 4px;
+      transition: width 1s linear;
     }
 
     .q-body {
@@ -344,7 +381,7 @@
     }
 
     .q-text {
-      font-family: 'Cinzel', serif;
+      font-family: 'Modern Antiqua', serif;
       font-size: clamp(1.5rem, 3.38vw, 2.73rem);
       font-weight: 600;
       color: #fff;
@@ -443,8 +480,8 @@
     }
 
     .feedback-text {
-      font-family: 'Cinzel', serif;
-      font-size: clamp(0.9rem, 1.7vw, 1.3rem);
+      font-family: 'Modern Antiqua', serif;
+      font-size: clamp(0.99rem, 1.87vw, 1.43rem);
       letter-spacing: 0.08em;
       text-align: center;
       opacity: 0;
@@ -467,7 +504,7 @@
 
     /* ── RESULT SCREEN ── */
     .result-score {
-      font-family: 'Cinzel', serif;
+      font-family: 'Modern Antiqua', serif;
       font-weight: 900;
       font-size: clamp(4rem, 11vw, 8.5rem);
       color: var(--gold);
@@ -482,13 +519,13 @@
       margin-top: -0.5em;
     }
     .result-player {
-      font-family: 'Cinzel', serif;
+      font-family: 'Modern Antiqua', serif;
       font-size: clamp(1.1rem, 2.2vw, 1.8rem);
       color: var(--gold-light);
       letter-spacing: 0.1em;
     }
     .result-correct-line {
-      font-family: 'Cinzel', serif;
+      font-family: 'Modern Antiqua', serif;
       font-size: clamp(0.95rem, 1.8vw, 1.4rem);
       color: var(--text);
     }
@@ -518,7 +555,7 @@
       backdrop-filter: blur(4px);
     }
     .sb-table th {
-      font-family: 'Cinzel', serif;
+      font-family: 'Modern Antiqua', serif;
       font-size: clamp(0.72rem, 1.2vw, 0.95rem);
       color: var(--gold);
       letter-spacing: 0.18em;
@@ -586,32 +623,32 @@ const QS = [
       "numerical symbolism",
       "a church blessing"
     ],
-    correct: 1, pts: 5
+    correct: 1, pts: 50
   },
   {
     text: "Which film was directed by Miloš Forman and filmed in Prague?",
     opts: ["Valmont", "Sin City", "Amadeus"],
-    correct: 2, pts: 7
+    correct: 2, pts: 70
   },
   {
     text: "Petřín Lookout Tower is a scaled-down version of the Eiffel Tower at approximately:",
     opts: ["1 : 2", "1 : 5", "1 : 8"],
-    correct: 1, pts: 7
+    correct: 1, pts: 70
   },
   {
     text: "The Czech Republic is among the world leaders in the consumption of:",
     opts: ["cranberry lemonade", "orange Fanta", "beer"],
-    correct: 2, pts: 11
+    correct: 2, pts: 110
   },
   {
     text: "Prague's Astronomical Clock displays:",
     opts: ["2 different times", "4 different times", "6 different times"],
-    correct: 1, pts: 11
+    correct: 1, pts: 110
   },
   {
     text: "Jaromír Jágr played professionally in which North American league?",
     opts: ["NBA", "NHL", "NFL"],
-    correct: 1, pts: 16
+    correct: 1, pts: 160
   },
   {
     text: "Dan Brown wrote a book about Prague titled:",
@@ -620,11 +657,11 @@ const QS = [
       "Golden Lane",
       "The Secret of All Secrets"
     ],
-    correct: 2, pts: 16
+    correct: 2, pts: 160
   }
 ];
 
-const MAX_PTS    = QS.reduce((s, q) => s + q.pts, 0); // 73
+const MAX_PTS    = QS.reduce((s, q) => s + q.pts, 0); // 730
 const LETTERS    = ['A', 'B', 'C'];
 const STORE_KEY  = 'miniSecretsScores_v1';
 
@@ -637,10 +674,15 @@ let S = {
   correct:      0,
   answered:     false,
   chosen:       null,
-  meIdx:        null
+  meIdx:        null,
+  timerInterval: null,
+  secondsLeft:   0
 };
 
 function resetQuiz() {
+  clearInterval(S.timerInterval);
+  S.timerInterval = null;
+  S.secondsLeft = 0;
   S.curQ = 0; S.score = 0; S.correct = 0;
   S.answered = false; S.chosen = null;
 }
@@ -810,6 +852,10 @@ function question() {
       <span class="q-pts">★ ${q.pts} POINTS</span>
       <button class="btn-abandon" id="bAbandon">✕ ABANDON</button>
     </div>
+    <div class="timer-row">
+      <span class="timer-count" id="timerCount">20</span>
+      <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+    </div>
 
     <div class="q-body">
       <p class="q-text">${esc(q.text)}</p>
@@ -839,19 +885,27 @@ function question() {
     b.onclick = () => answer(s, q, +b.dataset.i);
   });
   s.querySelector('#bNext').onclick = advance;
+  if (!S.answered) startTimer(s, q);
 }
 
 function answer(s, q, idx) {
   if (S.answered) return;
+  clearInterval(S.timerInterval);
   S.answered = true; S.chosen = idx;
   const ok = idx === q.correct;
-  if (ok) { S.score += q.pts; S.correct++; }
+  const bonus = ok ? S.secondsLeft : 0;
+  if (ok) { S.score += q.pts + bonus; S.correct++; }
   s.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
   applyHighlight(s, q, idx);
   const fb = s.querySelector('#fb');
-  fb.textContent = ok
-    ? `Correct! You earn ${q.pts} point${q.pts > 1 ? 's' : ''}.`
-    : `Wrong. The correct answer was ${LETTERS[q.correct]}.`;
+  const totalEarned = q.pts + bonus;
+  if (idx === -1) {
+    fb.textContent = `Time's up! The correct answer was ${LETTERS[q.correct]}.`;
+  } else {
+    fb.textContent = ok
+      ? `Correct! You earn ${totalEarned} point${totalEarned !== 1 ? 's' : ''}.`
+      : `Wrong. The correct answer was ${LETTERS[q.correct]}.`;
+  }
   fb.className = `feedback-text show ${ok ? 'correct' : 'wrong'}`;
   s.querySelector('#bNext').classList.add('show');
 }
@@ -866,6 +920,7 @@ function applyHighlight(s, q, chosen) {
 }
 
 function advance() {
+  clearInterval(S.timerInterval);
   if (S.curQ < QS.length - 1) {
     S.curQ++; S.answered = false; S.chosen = null;
     S.screen = 'question'; render();
@@ -873,6 +928,22 @@ function advance() {
     pushScore();
     S.screen = 'result'; render();
   }
+}
+
+function startTimer(s, q) {
+  S.secondsLeft = 20;
+  clearInterval(S.timerInterval);
+  S.timerInterval = setInterval(() => {
+    S.secondsLeft--;
+    const fill = document.getElementById('timerFill');
+    const count = document.getElementById('timerCount');
+    if (fill) fill.style.width = (S.secondsLeft / 20 * 100) + '%';
+    if (count) count.textContent = S.secondsLeft;
+    if (S.secondsLeft <= 0) {
+      clearInterval(S.timerInterval);
+      if (!S.answered) answer(s, q, -1);
+    }
+  }, 1000);
 }
 
 /* RESULT */

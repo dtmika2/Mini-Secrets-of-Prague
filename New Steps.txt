@@ -1,0 +1,7 @@
+Add a timer to each question - 20 second timer with shrinking bar from right to left. Add a point for each second left to the score. Make the timer bar red and on the left side, add a number countdown.
+
+Multiply all base scores per question by 10.
+
+Make the whole top bar component bigger by 20%. Also make bigger the bottom text which informs you of succes or fail after answered question - by 10%.
+
+Use the modern-antiqua font provided for the headline texts
