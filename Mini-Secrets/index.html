@@ -111,19 +111,28 @@
       font-family: 'Modern Antiqua', serif;
       font-weight: 700;
       color: #1c0e02;
-      background: linear-gradient(170deg,
-        #f0d07a 0%,
-        #d4a84b 18%,
-        #b87a10 50%,
-        #c8900a 78%,
-        #9a6500 100%
-      );
-      border: 2px solid #7a5210;
+      background:
+        /* organic surface noise: irregular micro-flaws on metal */
+        url("data:image/svg+xml,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.28 0.52' numOctaves='5' seed='8' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.11'/%3E%3C/svg%3E"),
+        linear-gradient(175deg,
+          #fce488 0%,
+          #ddb040 12%,
+          #b07818 35%,
+          #9a6408 52%,
+          #b07c18 70%,
+          #8c5c00 100%
+        );
+      /* directional border: lighter top-left, darker bottom-right */
+      border: 2px solid;
+      border-color: #e0c040 #3e2400 #261400 #8a5c10;
       border-radius: 5px;
       box-shadow:
-        0 5px 14px rgba(0,0,0,0.65),
-        inset 0 1px 0 rgba(255,245,180,0.55),
-        inset 0 -2px 0 rgba(60,30,0,0.35);
+        0 6px 18px rgba(0,0,0,0.72),
+        inset 0 2px 0 rgba(255,248,185,0.82),
+        inset 0 5px 10px rgba(255,240,150,0.16),
+        inset 0 -3px 0 rgba(38,16,0,0.62),
+        inset 2px 0 0 rgba(255,248,185,0.12),
+        inset -2px 0 0 rgba(25,10,0,0.36);
       cursor: pointer;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
@@ -237,14 +246,24 @@
       100%      { opacity: 0;    transform: translateY(-70px) rotate(55deg)  scale(0.8); }
     }
     .parch:not(:disabled):hover {
-      filter: brightness(1.12);
+      filter: brightness(1.1);
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,245,180,0.55);
+      box-shadow:
+        0 10px 24px rgba(0,0,0,0.76),
+        inset 0 2px 0 rgba(255,248,185,0.88),
+        inset 0 5px 10px rgba(255,240,150,0.18),
+        inset 0 -3px 0 rgba(38,16,0,0.55),
+        inset 2px 0 0 rgba(255,248,185,0.12),
+        inset -2px 0 0 rgba(25,10,0,0.30);
     }
     .parch:not(:disabled):active {
       transform: translateY(2px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
-      filter: brightness(0.95);
+      filter: brightness(0.92);
+      box-shadow:
+        0 2px 8px rgba(0,0,0,0.7),
+        inset 0 1px 0 rgba(255,248,185,0.55),
+        inset 0 5px 14px rgba(20,8,0,0.38),
+        inset 0 -1px 0 rgba(38,16,0,0.28);
     }
     .parch:disabled {
       cursor: default;
