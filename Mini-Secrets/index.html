@@ -878,14 +878,14 @@ function email() {
     <label class="nick-label" for="eInput">Your email <span style="opacity:0.45;font-size:0.85em">(optional)</span></label>
     <input id="eInput" class="nick-input" type="email" maxlength="120"
            autocomplete="email" placeholder="you@example.com" value="${esc(S.email)}">
-    <button class="parch parch-xl" id="bGo">BEGIN</button>
-    <button id="bSkip" style="background:none;border:none;color:var(--text-dim);
-            font-family:'Modern Antiqua',serif;font-size:clamp(0.75rem,1.3vw,1rem);
-            letter-spacing:0.2em;cursor:pointer;text-transform:uppercase;opacity:0.6">Skip</button>
+    <button class="parch parch-xl" id="bGo" ${S.email.trim() ? '' : 'disabled'}>BEGIN</button>
+    <button class="parch parch-md" id="bSkip" style="margin-top:-0.8vh">SKIP</button>
   `;
   app.appendChild(s);
 
   const inp = s.querySelector('#eInput');
+  const btn = s.querySelector('#bGo');
+  inp.oninput = () => { btn.disabled = !inp.value.trim(); };
   function go() {
     S.email = inp.value.trim();
     S.screen = 'question';
@@ -893,7 +893,7 @@ function email() {
   }
   s.querySelector('#bGo').onclick   = go;
   s.querySelector('#bSkip').onclick = go;
-  inp.onkeydown = e => { if (e.key === 'Enter') go(); };
+  inp.onkeydown = e => { if (e.key === 'Enter' && inp.value.trim()) go(); };
   setTimeout(() => inp.focus(), 60);
 }
 
