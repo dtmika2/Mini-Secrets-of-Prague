@@ -176,7 +176,6 @@
 <script>
 const STORE_KEY        = 'miniSecretsScores_v1';
 const MAX_QS           = 7;
-const SCROLL_THRESHOLD = 12;
 const SCROLL_SPEED     = 30;   // px / second
 const PAUSE_TOP_MS     = 20000;
 const PAUSE_BOTTOM_MS  = 5000;
@@ -246,7 +245,7 @@ function render() {
     </tr>`;
   }).join('');
 
-  if (rows.length > SCROLL_THRESHOLD) startScrollCycle(wrap);
+  if (wrap.scrollHeight > wrap.clientHeight) startScrollCycle(wrap);
 }
 
 window.addEventListener('storage', e => {
