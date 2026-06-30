@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Scoreboard — Secrets of Prague</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cagliostro&family=Cinzel:wght@400;600;700;900&family=Raleway:wght@300;400;500;600;700&display=swap');
+
+    @font-face {
+      font-family: 'Modern Antiqua';
+      src: url('modern-antiqua/ModernAntiqua-Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #070b12;
+      --gold:       #d4a84b;
+      --gold-dark:  #9a6e10;
+      --gold-light: #f0d080;
+      --text:       #e4dcc8;
+      --text-dim:   #8a7e68;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Raleway', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    #app {
+      width: 100vw; height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background:
+        radial-gradient(ellipse 90% 40% at 50% 0%, #141e32 0%, transparent 65%),
+        radial-gradient(ellipse 60% 30% at 50% 100%, #0c1428 0%, transparent 60%),
+        var(--bg);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── HEADER ── */
+    .sb-header {
+      flex-shrink: 0;
+      width: 100%;
+      padding: 4vh 6vw 2.5vh;
+      text-align: center;
+      border-bottom: 1px solid rgba(212,168,75,0.22);
+      position: relative;
+      z-index: 1;
+    }
+
+    .sb-title {
+      font-family: 'Modern Antiqua', serif;
+      font-size: clamp(2rem, 7.5vw, 4.2rem);
+      color: var(--gold);
+      letter-spacing: 0.18em;
+      text-shadow: 0 0 50px rgba(212,168,75,0.4);
+      line-height: 1.1;
+    }
+
+    .sb-subtitle-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75em;
+      margin-top: 1.2vh;
+    }
+
+    .sb-subtitle {
+      font-family: 'Modern Antiqua', serif;
+      font-size: clamp(0.85rem, 2.8vw, 1.5rem);
+      color: var(--text-dim);
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+    }
+
+    .live-dot {
+      width: clamp(8px, 1.6vw, 13px);
+      height: clamp(8px, 1.6vw, 13px);
+      border-radius: 50%;
+      background: #58c458;
+      box-shadow: 0 0 10px rgba(88,196,88,0.9);
+      flex-shrink: 0;
+      animation: livePulse 2s ease-in-out infinite;
+    }
+    @keyframes livePulse {
+      0%, 100% { opacity: 1;   transform: scale(1); }
+      50%       { opacity: 0.3; transform: scale(0.65); }
+    }
+
+    /* ── LIST WRAP ── */
+    .sb-list-wrap {
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+      padding: 1.5vh 0 0;
+    }
+
+    #score-list {
+      width: 100%;
+      padding: 0 5vw;
+    }
+
+    /* ── ROW ── */
+    .sb-row {
+      display: grid;
+      grid-template-columns: 3.8em 1fr auto;
+      align-items: center;
+      column-gap: 0.5em;
+      padding: 1.8vh 0;
+      border-bottom: 1px solid rgba(212,168,75,0.10);
+      animation: rowIn 0.35s ease both;
+    }
+    .sb-row:last-child { border-bottom: none; }
+
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateX(-12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* rank */
+    .sb-rank {
+      font-family: 'Modern Antiqua', serif;
+      text-align: center;
+      line-height: 1;
+    }
+    .sb-rank.r1 { font-size: clamp(1.8rem, 6vw, 3.5rem); }
+    .sb-rank.r2 { font-size: clamp(1.6rem, 5.5vw, 3.2rem); }
+    .sb-rank.r3 { font-size: clamp(1.5rem, 5vw, 2.9rem); }
+    .sb-rank.rn {
+      font-size: clamp(1rem, 3.2vw, 1.8rem);
+      color: var(--text-dim);
+    }
+
+    /* name + correct */
+    .sb-info { min-width: 0; }
+    .sb-name {
+      font-family: 'Modern Antiqua', serif;
+      font-size: clamp(1.4rem, 5vw, 2.9rem);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.1;
+    }
+    .r1-row .sb-name { color: var(--gold-light); }
+    .r2-row .sb-name,
+    .r3-row .sb-name { color: var(--text); }
+
+    .sb-correct {
+      font-size: clamp(0.7rem, 2vw, 1.1rem);
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      margin-top: 0.2em;
+    }
+
+    /* score */
+    .sb-score-col { text-align: right; }
+    .sb-score {
+      font-family: 'Modern Antiqua', serif;
+      font-size: clamp(1.9rem, 6.5vw, 4rem);
+      color: var(--gold);
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .r1-row .sb-score {
+      color: var(--gold-light);
+      text-shadow: 0 0 22px rgba(240,208,128,0.55);
+    }
+    .sb-pts-label {
+      font-size: clamp(0.6rem, 1.7vw, 0.95rem);
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-top: 0.1em;
+    }
+
+    /* ── EMPTY STATE ── */
+    .sb-empty {
+      text-align: center;
+      padding: 10vh 5vw;
+    }
+    .sb-empty-icon {
+      font-size: clamp(3rem, 10vw, 6rem);
+      color: var(--gold);
+      opacity: 0.25;
+      margin-bottom: 2.5vh;
+    }
+    .sb-empty-text {
+      font-family: 'Modern Antiqua', serif;
+      font-size: clamp(1rem, 3.2vw, 1.9rem);
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+      line-height: 1.7;
+    }
+
+    /* ── FOOTER ── */
+    .sb-footer {
+      flex-shrink: 0;
+      width: 100%;
+      padding: 1.8vh 5vw;
+      text-align: center;
+      border-top: 1px solid rgba(212,168,75,0.12);
+      position: relative;
+      z-index: 1;
+    }
+    .sb-footer-text {
+      font-family: 'Modern Antiqua', serif;
+      font-size: clamp(0.6rem, 1.8vw, 1rem);
+      color: var(--text-dim);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+    }
+
+    /* ── PARTICLES ── */
+    #particles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .ptcl {
+      position: absolute;
+      opacity: 0;
+      animation: ptclFloat linear infinite;
+      pointer-events: none;
+    }
+    @keyframes ptclFloat {
+      0%   { opacity: 0;    transform: translateY(0)    rotate(0deg)  scale(0.8); }
+      20%  { opacity: var(--po, 0.1); }
+      50%  { opacity: calc(var(--po, 0.1) * 0.4); transform: translateY(-40px) rotate(25deg) scale(1.05); }
+      80%  { opacity: var(--po, 0.1); }
+      100% { opacity: 0;    transform: translateY(-80px) rotate(55deg) scale(0.8); }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div id="particles"></div>
+
+  <header class="sb-header">
+    <div class="sb-title">Secrets of Prague</div>
+    <div class="sb-subtitle-row">
+      <span class="sb-subtitle">Live Scoreboard</span>
+      <span class="live-dot"></span>
+    </div>
+  </header>
+
+  <div class="sb-list-wrap">
+    <div id="score-list"></div>
+  </div>
+
+  <footer class="sb-footer">
+    <span class="sb-footer-text">Updates automatically · Play at the quiz station</span>
+  </footer>
+</div>
+
+<script>
+const STORE_KEY = 'miniSecretsScores_v1';
+const MAX_QS    = 7;
+const MEDALS    = ['🥇', '🥈', '🥉'];
+
+function loadScores() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+  catch { return []; }
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function render() {
+  const list = document.getElementById('score-list');
+  const rows = loadScores();
+
+  // Reset scroll animation
+  const styleEl = document.getElementById('sb-scroll-style');
+  if (styleEl) styleEl.textContent = '';
+  list.style.animation = 'none';
+  list.style.transform  = 'translateY(0)';
+  void list.offsetHeight; // force reflow
+
+  if (!rows.length) {
+    list.innerHTML = `
+      <div class="sb-empty">
+        <div class="sb-empty-icon">✦</div>
+        <div class="sb-empty-text">No scores yet —<br>be the first to play!</div>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = rows.map((r, i) => {
+    const rankCls = i < 3 ? `r${i + 1}` : 'rn';
+    const rowCls  = i < 3 ? `r${i + 1}-row` : '';
+    const rankTxt = i < 3 ? MEDALS[i] : String(i + 1);
+    return `
+      <div class="sb-row ${rowCls}" style="animation-delay:${i * 0.04}s">
+        <div class="sb-rank ${rankCls}">${rankTxt}</div>
+        <div class="sb-info">
+          <div class="sb-name">${esc(r.name)}</div>
+          <div class="sb-correct">${r.correct} / ${MAX_QS} correct</div>
+        </div>
+        <div class="sb-score-col">
+          <div class="sb-score">${r.score}</div>
+          <div class="sb-pts-label">pts</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  requestAnimationFrame(() => startScroll(list));
+}
+
+function startScroll(list) {
+  const wrap     = list.parentElement;
+  const overflow = list.scrollHeight - wrap.clientHeight;
+  if (overflow <= 20) return;
+
+  const s = document.getElementById('sb-scroll-style') || (() => {
+    const el = document.createElement('style');
+    el.id = 'sb-scroll-style';
+    document.head.appendChild(el);
+    return el;
+  })();
+
+  const pauseMs  = 3000;
+  const scrollMs = Math.max(7000, overflow * 55);
+  const total    = pauseMs * 2 + scrollMs;
+  const totalS   = (total / 1000).toFixed(2);
+  const pct1     = (pauseMs / total * 100).toFixed(2);
+  const pct2     = ((pauseMs + scrollMs) / total * 100).toFixed(2);
+
+  s.textContent = `
+    @keyframes sbScroll {
+      0%,     ${pct1}% { transform: translateY(0); }
+      ${pct2}%, 100%   { transform: translateY(-${overflow}px); }
+    }
+    #score-list { animation: sbScroll ${totalS}s ease-in-out infinite; }
+  `;
+}
+
+/* ── PARTICLES ── */
+function initParticles() {
+  const c      = document.getElementById('particles');
+  const syms   = ['✦', '✦', '✧', '·', '·'];
+  const colors = ['#d4a84b', '#e8c870', '#c8a040', '#fff8e8'];
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement('span');
+    p.className = 'ptcl';
+    p.textContent = syms[i % syms.length];
+    const op = (0.4 + Math.random() * 0.4).toFixed(2);
+    p.style.cssText = [
+      `left:${(Math.random() * 97).toFixed(1)}vw`,
+      `top:${(Math.random() * 97).toFixed(1)}vh`,
+      `font-size:${(0.3 + Math.random() * 0.65).toFixed(2)}rem`,
+      `color:${colors[Math.floor(Math.random() * colors.length)]}`,
+      `animation-delay:${(Math.random() * 14).toFixed(1)}s`,
+      `animation-duration:${(10 + Math.random() * 12).toFixed(1)}s`,
+      `--po:${op}`
+    ].join(';');
+    c.appendChild(p);
+  }
+}
+
+/* ── LIVE UPDATES ── */
+window.addEventListener('storage', e => {
+  if (e.key === STORE_KEY) render();
+});
+
+setInterval(render, 5000);
+
+/* ── BOOT ── */
+initParticles();
+render();
+</script>
+</body>
+</html>
