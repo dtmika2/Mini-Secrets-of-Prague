@@ -245,8 +245,16 @@ async function restoreFromSheet() {
   btn.disabled = true;
   setStatus('Fetching from Google Sheet…', '');
   try {
-    const res    = await fetch(SHEET_URL, { redirect: 'follow' });
-    const scores = await res.json();
+    const res  = await fetch(SHEET_URL, { redirect: 'follow' });
+    const text = await res.text();
+    let scores;
+    try {
+      scores = JSON.parse(text);
+    } catch {
+      if (text.trim().startsWith('<'))
+        throw new Error('Apps Script returned an HTML page — open Apps Script, check the deployment still has "Who has access: Anyone", and redeploy.');
+      throw new Error('Invalid response: ' + text.slice(0, 120));
+    }
     if (!Array.isArray(scores)) throw new Error('Unexpected response from sheet.');
     scores.sort((a, b) => b.score - a.score || b.correct - a.correct);
     if (scores.length > 100) scores.length = 100;
