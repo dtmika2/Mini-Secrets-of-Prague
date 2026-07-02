@@ -103,8 +103,8 @@
 
     /* ── SCOREBOARD TABLE ── */
     .sb-wrap {
-      width: 88vw;
-      max-height: 68vh;
+      width: 79.2vw;
+      max-height: 61.2vh;
       overflow-y: auto;
       border: 1px solid rgba(212,168,75,0.2);
       border-radius: 6px;
@@ -125,7 +125,7 @@
     }
     .sb-table th {
       font-family: 'Modern Antiqua', serif;
-      font-size: 1.5vw;
+      font-size: 1.35vw;
       color: var(--gold);
       letter-spacing: 0.18em;
       text-transform: uppercase;
@@ -135,7 +135,7 @@
     }
     .sb-table td {
       font-family: 'Cagliostro', 'Raleway', sans-serif;
-      font-size: 1.8vw;
+      font-size: 1.62vw;
       color: var(--text);
       padding: 0.9em 1.4em;
       border-bottom: 1px solid rgba(255,255,255,0.04);
@@ -157,7 +157,7 @@
       text-align: center;
       color: var(--text-dim);
       font-style: italic;
-      font-size: 1.5vw;
+      font-size: 1.35vw;
     }
   </style>
 </head>
@@ -188,6 +188,7 @@ const PAUSE_BOTTOM_MS  = 3000;
 
 let scrollRAF   = null;
 let scrollTimer = null;
+let scrollIsRAF = false;
 
 function loadScores() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
@@ -201,30 +202,36 @@ function esc(s) {
 }
 
 function stopScrollCycle() {
-  cancelAnimationFrame(scrollRAF);
+  if (scrollIsRAF) cancelAnimationFrame(scrollRAF);
+  else             clearInterval(scrollRAF);
   clearTimeout(scrollTimer);
   scrollRAF = scrollTimer = null;
+  scrollIsRAF = false;
 }
 
 function startScrollCycle(wrap) {
   stopScrollCycle();
 
   function doScrollDown() {
-    // Recalculate here so fonts are loaded and layout is final
     const maxScroll = wrap.scrollHeight - wrap.clientHeight;
     if (maxScroll <= 0) return;
 
     let last = performance.now();
-    function step(now) {
-      const dt = now - last; last = now;
+    function step() {
+      const now = performance.now();
+      const dt  = Math.min(now - last, 100); // cap dt so tab-switch doesn't cause a jump
+      last = now;
       wrap.scrollTop = Math.min(wrap.scrollTop + SCROLL_SPEED * dt / 1000, maxScroll);
-      if (wrap.scrollTop < maxScroll) {
-        scrollRAF = requestAnimationFrame(step);
-      } else {
+      if (wrap.scrollTop >= maxScroll) {
+        clearInterval(scrollRAF);
+        scrollRAF = null;
+        scrollIsRAF = false;
         scrollTimer = setTimeout(render, PAUSE_BOTTOM_MS);
       }
     }
-    scrollRAF = requestAnimationFrame(step);
+    // setInterval keeps firing even when the window isn't focused, unlike rAF
+    scrollIsRAF = false;
+    scrollRAF   = setInterval(step, 16);
   }
 
   scrollTimer = setTimeout(doScrollDown, PAUSE_TOP_MS);
