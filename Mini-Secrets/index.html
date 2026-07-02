@@ -756,10 +756,11 @@ function render() {
   if (prev) prev.remove();
   ({ start, nickname, email, question, result, scoreboard })[S.screen]();
   randomizeShine();
-  maybeShowDecorativeImage();
+  setBackground(S.screen);
+  // maybeShowDecorativeImage();
 }
 
-const DECO_IMGS = [
+/* const DECO_IMGS = [
   'Decorative images/image-removebg-preview (3).png',
   'Decorative images/image-removebg-preview (4).png',
   'Decorative images/image-removebg-preview (5).png',
@@ -794,6 +795,26 @@ function maybeShowDecorativeImage() {
   img.style[isLeft ? 'left' : 'right'] = '10%';
 
   app.appendChild(img);
+} */
+
+const SCREEN_BACKGROUNDS = {
+  start:      { prefix: 'HomePage',   count: 5 },
+  nickname:   { prefix: 'Quiz',       count: 7 },
+  email:      { prefix: 'Quiz',       count: 7 },
+  question:   { prefix: 'Quiz',       count: 7 },
+  result:     { prefix: 'Quiz',       count: 7 },
+  scoreboard: { prefix: 'Scoreboard', count: 4 },
+};
+
+function setBackground(screen) {
+  const cfg = SCREEN_BACKGROUNDS[screen] || SCREEN_BACKGROUNDS.start;
+  const v   = Math.floor(Math.random() * cfg.count) + 1;
+  const src = `Backgrounds/${cfg.prefix}-2340x1440px_v${v}.png`;
+  app.style.background = [
+    'radial-gradient(ellipse 80% 60% at 50% 20%, #141e32 0%, transparent 70%) center / auto no-repeat',
+    'radial-gradient(ellipse 60% 40% at 80% 80%, #0c1428 0%, transparent 60%) center / auto no-repeat',
+    `url("${src}") center / cover no-repeat`,
+  ].join(', ');
 }
 
 function randomizeShine() {
