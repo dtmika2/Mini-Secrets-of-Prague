@@ -44,12 +44,29 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background:
-        radial-gradient(ellipse 80% 60% at 50% 20%, #141e32 0%, transparent 70%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, #0c1428 0%, transparent 60%),
-        var(--bg);
+      background: var(--bg);
       position: relative;
       z-index: 1;
+    }
+
+    .bg-img-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    #app::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 20%, #141e32 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, #0c1428 0%, transparent 60%);
+      z-index: 1;
+      pointer-events: none;
     }
 
     /* ── SCREEN BASE ── */
@@ -62,6 +79,8 @@
       justify-content: center;
       padding: 2.5vh 5vw;
       gap: 2.5vh;
+      position: relative;
+      z-index: 2;
       animation: fadeUp 0.35s ease;
     }
 
@@ -558,7 +577,7 @@
       overflow-y: auto;
       border: 1px solid rgba(212,168,75,0.2);
       border-radius: 6px;
-      background: rgba(255,255,255,0.02);
+      background: rgba(14,30,80,0.35);
     }
     .sb-wrap::-webkit-scrollbar { width: 5px; }
     .sb-wrap::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
@@ -698,6 +717,30 @@ const LETTERS    = ['A', 'B', 'C'];
 const STORE_KEY  = 'miniSecretsScores_v1';
 const SHEET_URL  = 'https://script.google.com/macros/s/AKfycbxLXdZtKG9qms5vDDaCjAlyxTuFxwTulS0PgXoQdIGG3YhK459dipX2rRyG66dYFa7A/exec';
 
+/* ─── AUDIO ─── */
+const SFX = {
+  correct:   new Audio('Sounds/Triumphant_fanfare_w_%234-1782999764741.mp3'),
+  wrong:     new Audio('Sounds/sound_indicating_a_w_%231-1782999483458.mp3'),
+  result:    new Audio('Sounds/Triumphant_fanfare_w_%233-1782999787396.mp3'),
+  countdown: new Audio('Sounds/Frantic,_heart-pound_%234-1782999379523.mp3'),
+};
+SFX.countdown.loop = true;
+
+let _soundTimer = null;
+
+function playSound(key) {
+  const a = SFX[key];
+  if (!a) return;
+  a.currentTime = 0;
+  a.play().catch(() => {});
+}
+
+function stopAllSounds() {
+  clearTimeout(_soundTimer);
+  _soundTimer = null;
+  Object.values(SFX).forEach(a => { a.pause(); a.currentTime = 0; });
+}
+
 /* ─── STATE ─── */
 let S = {
   screen:       'start',  // start | nickname | email | question | result | scoreboard
@@ -756,10 +799,11 @@ function render() {
   if (prev) prev.remove();
   ({ start, nickname, email, question, result, scoreboard })[S.screen]();
   randomizeShine();
-  maybeShowDecorativeImage();
+  setBackground(S.screen);
+  // maybeShowDecorativeImage();
 }
 
-const DECO_IMGS = [
+/* const DECO_IMGS = [
   'Decorative images/image-removebg-preview (3).png',
   'Decorative images/image-removebg-preview (4).png',
   'Decorative images/image-removebg-preview (5).png',
@@ -794,6 +838,31 @@ function maybeShowDecorativeImage() {
   img.style[isLeft ? 'left' : 'right'] = '10%';
 
   app.appendChild(img);
+} */
+
+const PINNED_BACKGROUNDS = {
+  start:      { src: 'Backgrounds/HomePage-2340x1440px_v2.png',   flip: false },
+  nickname:   { src: 'Backgrounds/Quiz-2340x1440px_v3.png',       flip: false },
+  email:      { src: 'Backgrounds/Quiz-2340x1440px_v2.png',       flip: false },
+  question:   { src: 'Backgrounds/Quiz-2340x1440px_v4.5.png',     flip: true  },
+  result:     { src: 'Backgrounds/HomePage-2340x1440px_v1.png',   flip: false },
+  scoreboard: { src: 'Backgrounds/Scoreboard-2340x1440px_v1.png', flip: false },
+};
+
+function setBackground(screen) {
+  let imgLayer = app.querySelector('.bg-img-layer');
+  if (!imgLayer) {
+    imgLayer = document.createElement('div');
+    imgLayer.className = 'bg-img-layer';
+    app.insertBefore(imgLayer, app.firstChild);
+  }
+
+  const pinned = PINNED_BACKGROUNDS[screen] || PINNED_BACKGROUNDS.start;
+  const src  = pinned.src;
+  const flip = pinned.flip;
+
+  imgLayer.style.backgroundImage = `url("${src}")`;
+  imgLayer.style.transform = flip ? 'scaleX(-1)' : 'none';
 }
 
 function randomizeShine() {
@@ -954,7 +1023,7 @@ function question() {
 
   if (S.answered) applyHighlight(s, q, S.chosen);
 
-  s.querySelector('#bAbandon').onclick = () => { S.name = ''; resetQuiz(); S.screen = 'start'; render(); };
+  s.querySelector('#bAbandon').onclick = () => { stopAllSounds(); S.name = ''; resetQuiz(); S.screen = 'start'; render(); };
   s.querySelectorAll('.opt-btn').forEach(b => {
     b.onclick = () => answer(s, q, +b.dataset.i);
   });
@@ -965,6 +1034,7 @@ function question() {
 function answer(s, q, idx) {
   if (S.answered) return;
   clearInterval(S.timerInterval);
+  stopAllSounds();
   S.answered = true; S.chosen = idx;
   const ok = idx === q.correct;
   const bonus = ok ? S.secondsLeft * 3 : 0;
@@ -973,10 +1043,13 @@ function answer(s, q, idx) {
   applyHighlight(s, q, idx);
   const fb = s.querySelector('#fb');
   if (idx === -1) {
+    playSound('wrong');
     fb.textContent = `Time's up! The correct answer was ${LETTERS[q.correct]}.`;
   } else if (ok) {
+    playSound('correct');
     fb.innerHTML = `Correct! You earn ${q.pts + bonus} points.<br>+${q.pts} pts for the correct answer<br>+${bonus} pts from ${S.secondsLeft}s on the clock`;
   } else {
+    playSound('wrong');
     fb.textContent = `Wrong. The correct answer was ${LETTERS[q.correct]}.`;
   }
   fb.className = `feedback-text show ${ok ? 'correct' : 'wrong'}`;
@@ -1006,6 +1079,7 @@ function advance() {
 function startTimer(s, q) {
   S.secondsLeft = 20;
   clearInterval(S.timerInterval);
+  _soundTimer = setTimeout(() => playSound('countdown'), 1000);
   S.timerInterval = setInterval(() => {
     S.secondsLeft--;
     const fill = document.getElementById('timerFill');
@@ -1021,6 +1095,7 @@ function startTimer(s, q) {
 
 /* RESULT */
 function result() {
+  playSound('result');
   const s = mk('div', 'screen');
   s.style.gap = '2.2vh';
   s.innerHTML = `
@@ -1088,6 +1163,7 @@ function scoreboard() {
 
 /* ─── HELPERS ─── */
 function playAgain() {
+  stopAllSounds();
   S.name = ''; resetQuiz();
   S.screen = 'start'; render();
 }

@@ -45,9 +45,9 @@
       padding: 2.5vh 5vw;
       gap: 2.2vh;
       background:
-        radial-gradient(ellipse 80% 60% at 50% 20%, #141e32 0%, transparent 70%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, #0c1428 0%, transparent 60%),
-        var(--bg);
+        radial-gradient(ellipse 80% 60% at 50% 20%, #141e32 0%, transparent 70%) center / auto no-repeat,
+        radial-gradient(ellipse 60% 40% at 80% 80%, #0c1428 0%, transparent 60%) center / auto no-repeat,
+        url('Backgrounds/Scoreboard-2340x1440px_v1.png') center / cover no-repeat;
     }
 
     /* ── TYPOGRAPHY ── */
@@ -103,12 +103,12 @@
 
     /* ── SCOREBOARD TABLE ── */
     .sb-wrap {
-      width: 88vw;
-      max-height: 68vh;
+      width: 79.2vw;
+      max-height: 61.2vh;
       overflow-y: auto;
       border: 1px solid rgba(212,168,75,0.2);
       border-radius: 6px;
-      background: rgba(255,255,255,0.02);
+      background: rgba(14,30,80,0.35);
     }
     .sb-wrap::-webkit-scrollbar { width: 5px; }
     .sb-wrap::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
@@ -125,7 +125,7 @@
     }
     .sb-table th {
       font-family: 'Modern Antiqua', serif;
-      font-size: 1.5vw;
+      font-size: 1.35vw;
       color: var(--gold);
       letter-spacing: 0.18em;
       text-transform: uppercase;
@@ -135,7 +135,7 @@
     }
     .sb-table td {
       font-family: 'Cagliostro', 'Raleway', sans-serif;
-      font-size: 1.8vw;
+      font-size: 1.62vw;
       color: var(--text);
       padding: 0.9em 1.4em;
       border-bottom: 1px solid rgba(255,255,255,0.04);
@@ -157,7 +157,7 @@
       text-align: center;
       color: var(--text-dim);
       font-style: italic;
-      font-size: 1.5vw;
+      font-size: 1.35vw;
     }
   </style>
 </head>
@@ -182,12 +182,13 @@
 <script>
 const STORE_KEY        = 'miniSecretsScores_v1';
 const MAX_QS           = 7;
-const SCROLL_SPEED     = 30;   // px / second
-const PAUSE_TOP_MS     = 20000;
-const PAUSE_BOTTOM_MS  = 5000;
+const SCROLL_SPEED     = 28;   // px / second
+const PAUSE_TOP_MS     = 4000;
+const PAUSE_BOTTOM_MS  = 3000;
 
 let scrollRAF   = null;
 let scrollTimer = null;
+let scrollIsRAF = false;
 
 function loadScores() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
@@ -201,28 +202,41 @@ function esc(s) {
 }
 
 function stopScrollCycle() {
-  cancelAnimationFrame(scrollRAF);
+  if (scrollIsRAF) cancelAnimationFrame(scrollRAF);
+  else             clearInterval(scrollRAF);
   clearTimeout(scrollTimer);
   scrollRAF = scrollTimer = null;
+  scrollIsRAF = false;
 }
 
 function startScrollCycle(wrap) {
   stopScrollCycle();
-  const maxScroll = wrap.scrollHeight - wrap.clientHeight;
-  if (maxScroll <= 0) return;
 
   function doScrollDown() {
+    const maxScroll = wrap.scrollHeight - wrap.clientHeight;
+    if (maxScroll <= 0) return;
+
     let last = performance.now();
-    function step(now) {
-      const dt = now - last; last = now;
-      wrap.scrollTop = Math.min(wrap.scrollTop + SCROLL_SPEED * dt / 1000, maxScroll);
-      if (wrap.scrollTop < maxScroll) {
-        scrollRAF = requestAnimationFrame(step);
-      } else {
+    let pos  = 0; // float position — never read back from scrollTop to avoid rounding loss
+    function step() {
+      const now = performance.now();
+      const dt  = Math.min(now - last, 100);
+      last = now;
+      pos += SCROLL_SPEED * dt / 1000;
+      if (pos >= maxScroll) {
+        pos = maxScroll;
+        wrap.scrollTop = pos;
+        clearInterval(scrollRAF);
+        scrollRAF = null;
+        scrollIsRAF = false;
         scrollTimer = setTimeout(render, PAUSE_BOTTOM_MS);
+        return;
       }
+      wrap.scrollTop = pos;
     }
-    scrollRAF = requestAnimationFrame(step);
+    // setInterval keeps firing even when the window isn't focused, unlike rAF
+    scrollIsRAF = false;
+    scrollRAF   = setInterval(step, 16);
   }
 
   scrollTimer = setTimeout(doScrollDown, PAUSE_TOP_MS);
@@ -251,7 +265,7 @@ function render() {
     </tr>`;
   }).join('');
 
-  if (wrap.scrollHeight > wrap.clientHeight) startScrollCycle(wrap);
+  startScrollCycle(wrap);
 }
 
 window.addEventListener('storage', e => {
@@ -261,6 +275,8 @@ window.addEventListener('storage', e => {
 setInterval(() => { if (!scrollRAF && !scrollTimer) render(); }, 60000);
 
 render();
+// Re-check scroll after custom fonts finish loading, since they affect row height
+document.fonts.ready.then(() => { if (!scrollRAF && !scrollTimer) render(); });
 </script>
 </body>
 </html>
