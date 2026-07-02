@@ -182,9 +182,9 @@
 <script>
 const STORE_KEY        = 'miniSecretsScores_v1';
 const MAX_QS           = 7;
-const SCROLL_SPEED     = 30;   // px / second
-const PAUSE_TOP_MS     = 20000;
-const PAUSE_BOTTOM_MS  = 5000;
+const SCROLL_SPEED     = 40;   // px / second
+const PAUSE_TOP_MS     = 4000;
+const PAUSE_BOTTOM_MS  = 3000;
 
 let scrollRAF   = null;
 let scrollTimer = null;
@@ -208,10 +208,12 @@ function stopScrollCycle() {
 
 function startScrollCycle(wrap) {
   stopScrollCycle();
-  const maxScroll = wrap.scrollHeight - wrap.clientHeight;
-  if (maxScroll <= 0) return;
 
   function doScrollDown() {
+    // Recalculate here so fonts are loaded and layout is final
+    const maxScroll = wrap.scrollHeight - wrap.clientHeight;
+    if (maxScroll <= 0) return;
+
     let last = performance.now();
     function step(now) {
       const dt = now - last; last = now;
@@ -251,7 +253,7 @@ function render() {
     </tr>`;
   }).join('');
 
-  if (wrap.scrollHeight > wrap.clientHeight) startScrollCycle(wrap);
+  startScrollCycle(wrap);
 }
 
 window.addEventListener('storage', e => {
@@ -261,6 +263,8 @@ window.addEventListener('storage', e => {
 setInterval(() => { if (!scrollRAF && !scrollTimer) render(); }, 60000);
 
 render();
+// Re-check scroll after custom fonts finish loading, since they affect row height
+document.fonts.ready.then(() => { if (!scrollRAF && !scrollTimer) render(); });
 </script>
 </body>
 </html>
