@@ -44,12 +44,29 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background:
-        radial-gradient(ellipse 80% 60% at 50% 20%, #141e32 0%, transparent 70%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, #0c1428 0%, transparent 60%),
-        var(--bg);
+      background: var(--bg);
       position: relative;
       z-index: 1;
+    }
+
+    .bg-img-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    #app::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 20%, #141e32 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, #0c1428 0%, transparent 60%);
+      z-index: 1;
+      pointer-events: none;
     }
 
     /* ── SCREEN BASE ── */
@@ -62,6 +79,8 @@
       justify-content: center;
       padding: 2.5vh 5vw;
       gap: 2.5vh;
+      position: relative;
+      z-index: 2;
       animation: fadeUp 0.35s ease;
     }
 
@@ -797,24 +816,29 @@ function maybeShowDecorativeImage() {
   app.appendChild(img);
 } */
 
-const SCREEN_BACKGROUNDS = {
-  start:      { prefix: 'HomePage',   count: 5 },
-  nickname:   { prefix: 'Quiz',       count: 7 },
-  email:      { prefix: 'Quiz',       count: 7 },
-  question:   { prefix: 'Quiz',       count: 7 },
-  result:     { prefix: 'Quiz',       count: 7 },
-  scoreboard: { prefix: 'Scoreboard', count: 4 },
+const PINNED_BACKGROUNDS = {
+  start:      { src: 'Backgrounds/HomePage-2340x1440px_v2.png',   flip: false },
+  nickname:   { src: 'Backgrounds/Quiz-2340x1440px_v3.png',       flip: false },
+  email:      { src: 'Backgrounds/Quiz-2340x1440px_v2.png',       flip: false },
+  question:   { src: 'Backgrounds/Quiz-2340x1440px_v4.5.png',     flip: true  },
+  result:     { src: 'Backgrounds/HomePage-2340x1440px_v1.png',   flip: false },
+  scoreboard: { src: 'Backgrounds/Scoreboard-2340x1440px_v1.png', flip: false },
 };
 
 function setBackground(screen) {
-  const cfg = SCREEN_BACKGROUNDS[screen] || SCREEN_BACKGROUNDS.start;
-  const v   = Math.floor(Math.random() * cfg.count) + 1;
-  const src = `Backgrounds/${cfg.prefix}-2340x1440px_v${v}.png`;
-  app.style.background = [
-    'radial-gradient(ellipse 80% 60% at 50% 20%, #141e32 0%, transparent 70%) center / auto no-repeat',
-    'radial-gradient(ellipse 60% 40% at 80% 80%, #0c1428 0%, transparent 60%) center / auto no-repeat',
-    `url("${src}") center / cover no-repeat`,
-  ].join(', ');
+  let imgLayer = app.querySelector('.bg-img-layer');
+  if (!imgLayer) {
+    imgLayer = document.createElement('div');
+    imgLayer.className = 'bg-img-layer';
+    app.insertBefore(imgLayer, app.firstChild);
+  }
+
+  const pinned = PINNED_BACKGROUNDS[screen] || PINNED_BACKGROUNDS.start;
+  const src  = pinned.src;
+  const flip = pinned.flip;
+
+  imgLayer.style.backgroundImage = `url("${src}")`;
+  imgLayer.style.transform = flip ? 'scaleX(-1)' : 'none';
 }
 
 function randomizeShine() {
