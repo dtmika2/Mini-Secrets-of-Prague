@@ -223,7 +223,7 @@ function startScrollCycle(wrap) {
 
   function doScrollDown() {
     const maxScroll = wrap.scrollHeight - wrap.clientHeight;
-    if (maxScroll <= 0) return;
+    if (maxScroll <= 0) { scrollTimer = null; return; }
 
     let last = performance.now();
     let pos  = 0; // float position — never read back from scrollTop to avoid rounding loss
