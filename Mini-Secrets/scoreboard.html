@@ -180,7 +180,7 @@
 </div>
 
 <script>
-const STORE_KEY        = 'miniSecretsScores_v1';
+const SHEET_URL        = 'https://script.google.com/macros/s/AKfycbxLXdZtKG9qms5vDDaCjAlyxTuFxwTulS0PgXoQdIGG3YhK459dipX2rRyG66dYFa7A/exec';
 const MAX_QS           = 7;
 const SCROLL_SPEED     = 28;   // px / second
 const PAUSE_TOP_MS     = 4000;
@@ -189,10 +189,19 @@ const PAUSE_BOTTOM_MS  = 3000;
 let scrollRAF   = null;
 let scrollTimer = null;
 let scrollIsRAF = false;
+let cachedRows  = [];
 
-function loadScores() {
-  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
-  catch { return []; }
+async function fetchScores() {
+  try {
+    const res  = await fetch(SHEET_URL, { redirect: 'follow' });
+    const text = await res.text();
+    const rows = JSON.parse(text);
+    if (!Array.isArray(rows)) throw new Error('bad response');
+    rows.sort((a, b) => b.score - a.score || b.correct - a.correct);
+    if (rows.length > 100) rows.length = 100;
+    cachedRows = rows;
+  } catch { /* keep cachedRows as-is on failure */ }
+  return cachedRows;
 }
 
 function esc(s) {
@@ -242,11 +251,11 @@ function startScrollCycle(wrap) {
   scrollTimer = setTimeout(doScrollDown, PAUSE_TOP_MS);
 }
 
-function render() {
+async function render() {
   stopScrollCycle();
   const wrap  = document.querySelector('.sb-wrap');
   const tbody = document.getElementById('sb-body');
-  const rows  = loadScores();
+  const rows  = await fetchScores();
 
   wrap.scrollTop = 0;
 
@@ -267,10 +276,6 @@ function render() {
 
   startScrollCycle(wrap);
 }
-
-window.addEventListener('storage', e => {
-  if (e.key === STORE_KEY) render();
-});
 
 setInterval(() => { if (!scrollRAF && !scrollTimer) render(); }, 60000);
 
