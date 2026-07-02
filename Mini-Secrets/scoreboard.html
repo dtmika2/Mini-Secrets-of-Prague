@@ -277,7 +277,7 @@ async function render() {
   startScrollCycle(wrap);
 }
 
-setInterval(() => { if (!scrollRAF && !scrollTimer) render(); }, 60000);
+setInterval(() => { if (!scrollRAF && !scrollTimer) render(); }, 20000);
 
 render();
 // Re-check scroll after custom fonts finish loading, since they affect row height

@@ -670,7 +670,7 @@ const QS = [
   {
     text: "According to legend, Charles Bridge is protected from destruction by:",
     opts: [
-      "mythical water creatures from river",
+      "creatures from river",
       "numerical symbolism",
       "a church blessing"
     ],
@@ -692,7 +692,7 @@ const QS = [
     correct: 2, pts: 110
   },
   {
-    text: "There are four wooden figures surrounding the Prague Astronomical Clock - death, vanity, miser and lust. Which one of them rings a bell each hour?",
+    text: "Four wooden figures surround Prague's Astronomical Clock - death, vanity, miser, and lust. Which one rings the bell each hour?",
     opts: ["Lust", "Death", "Vanity"],
     correct: 1, pts: 110
   },
@@ -996,7 +996,7 @@ function question() {
       <button class="btn-abandon" id="bAbandon">✕ ABANDON</button>
     </div>
     <div class="timer-row">
-      <span class="timer-count" id="timerCount">20</span>
+      <span class="timer-count" id="timerCount">25</span>
       <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
     </div>
 
@@ -1077,14 +1077,14 @@ function advance() {
 }
 
 function startTimer(s, q) {
-  S.secondsLeft = 20;
+  S.secondsLeft = 25;
   clearInterval(S.timerInterval);
   _soundTimer = setTimeout(() => playSound('countdown'), 1000);
   S.timerInterval = setInterval(() => {
     S.secondsLeft--;
     const fill = document.getElementById('timerFill');
     const count = document.getElementById('timerCount');
-    if (fill) fill.style.width = (S.secondsLeft / 20 * 100) + '%';
+    if (fill) fill.style.width = (S.secondsLeft / 25 * 100) + '%';
     if (count) count.textContent = S.secondsLeft;
     if (S.secondsLeft <= 0) {
       clearInterval(S.timerInterval);
