@@ -182,7 +182,7 @@
 <script>
 const STORE_KEY        = 'miniSecretsScores_v1';
 const MAX_QS           = 7;
-const SCROLL_SPEED     = 40;   // px / second
+const SCROLL_SPEED     = 28;   // px / second
 const PAUSE_TOP_MS     = 4000;
 const PAUSE_BOTTOM_MS  = 3000;
 
@@ -217,17 +217,22 @@ function startScrollCycle(wrap) {
     if (maxScroll <= 0) return;
 
     let last = performance.now();
+    let pos  = 0; // float position — never read back from scrollTop to avoid rounding loss
     function step() {
       const now = performance.now();
-      const dt  = Math.min(now - last, 100); // cap dt so tab-switch doesn't cause a jump
+      const dt  = Math.min(now - last, 100);
       last = now;
-      wrap.scrollTop = Math.min(wrap.scrollTop + SCROLL_SPEED * dt / 1000, maxScroll);
-      if (wrap.scrollTop >= maxScroll) {
+      pos += SCROLL_SPEED * dt / 1000;
+      if (pos >= maxScroll) {
+        pos = maxScroll;
+        wrap.scrollTop = pos;
         clearInterval(scrollRAF);
         scrollRAF = null;
         scrollIsRAF = false;
         scrollTimer = setTimeout(render, PAUSE_BOTTOM_MS);
+        return;
       }
+      wrap.scrollTop = pos;
     }
     // setInterval keeps firing even when the window isn't focused, unlike rAF
     scrollIsRAF = false;
