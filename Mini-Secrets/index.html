@@ -403,7 +403,13 @@
       width: 100%;
       background: #d45050;
       border-radius: 4px;
-      transition: width 1s linear;
+    }
+    .timer-fill.running {
+      animation: timerShrink 25s linear forwards;
+    }
+    @keyframes timerShrink {
+      from { width: 100%; }
+      to   { width: 0%; }
     }
 
     .q-body {
@@ -1038,6 +1044,8 @@ function answer(s, q, idx) {
   if (S.answered) return;
   clearInterval(S.timerInterval);
   stopAllSounds();
+  const fill = s.querySelector('#timerFill');
+  if (fill) { fill.style.width = getComputedStyle(fill).width; fill.classList.remove('running'); }
   S.answered = true; S.chosen = idx;
   const ok = idx === q.correct;
   const bonus = ok ? S.secondsLeft * 3 : 0;
@@ -1084,20 +1092,14 @@ function startTimer(s, q) {
   clearInterval(S.timerInterval);
   playSound('countdown');
   const fill = document.getElementById('timerFill');
-  // Kick off first bar transition immediately so bar starts moving on first frame
-  if (fill) setTimeout(() => { fill.style.width = (24 / 25 * 100) + '%'; }, 0);
+  if (fill) fill.classList.add('running');
   S.timerInterval = setInterval(() => {
     S.secondsLeft--;
-    const f = document.getElementById('timerFill');
     const count = document.getElementById('timerCount');
     if (count) count.textContent = S.secondsLeft;
     if (S.secondsLeft <= 0) {
       clearInterval(S.timerInterval);
-      // Force bar to 0% with no transition so it's visually empty before fail triggers
-      if (f) { f.style.transition = 'none'; f.style.width = '0%'; }
       if (!S.answered) answer(s, q, -1);
-    } else {
-      if (f) f.style.width = (S.secondsLeft / 25 * 100) + '%';
     }
   }, 1000);
 }
