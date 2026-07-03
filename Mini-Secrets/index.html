@@ -412,7 +412,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 2vh 6vw 0;
+      padding: 2vh 6vw 10vh;
       gap: 3vh;
       width: 100%;
       min-height: 0;
@@ -507,14 +507,17 @@
     }
 
     .q-footer {
-      flex-shrink: 0;
+      position: absolute;
+      bottom: 0;
       width: 100%;
       padding: 1.5vh 5vw 2.5vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 1.5vh;
-      min-height: 10vh;
+    }
+    .q-footer:has(.feedback-text.show) {
+      background: linear-gradient(to bottom, transparent 0%, rgba(11,18,37,0.94) 28%);
     }
 
     .feedback-text {
