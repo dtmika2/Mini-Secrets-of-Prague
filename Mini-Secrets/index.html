@@ -403,13 +403,7 @@
       width: 100%;
       background: #d45050;
       border-radius: 4px;
-    }
-    .timer-fill.running {
-      animation: timerShrink 25s linear forwards;
-    }
-    @keyframes timerShrink {
-      from { width: 100%; }
-      to   { width: 0%; }
+      transition: width 1s linear;
     }
 
     .q-body {
@@ -715,7 +709,7 @@ const QS = [
     opts: [
       "Prague of a Hundred Spires",
       "Golden Lane",
-      "The Secret of Secrets"
+      "The Secret of All Secrets"
     ],
     correct: 2, pts: 160
   }
@@ -1044,8 +1038,6 @@ function answer(s, q, idx) {
   if (S.answered) return;
   clearInterval(S.timerInterval);
   stopAllSounds();
-  const fill = s.querySelector('#timerFill');
-  if (fill) { fill.style.width = getComputedStyle(fill).width; fill.classList.remove('running'); }
   S.answered = true; S.chosen = idx;
   const ok = idx === q.correct;
   const bonus = ok ? S.secondsLeft * 3 : 0;
@@ -1090,12 +1082,12 @@ function advance() {
 function startTimer(s, q) {
   S.secondsLeft = 25;
   clearInterval(S.timerInterval);
-  playSound('countdown');
-  const fill = document.getElementById('timerFill');
-  if (fill) fill.classList.add('running');
+  _soundTimer = setTimeout(() => playSound('countdown'), 1000);
   S.timerInterval = setInterval(() => {
     S.secondsLeft--;
+    const fill = document.getElementById('timerFill');
     const count = document.getElementById('timerCount');
+    if (fill) fill.style.width = (S.secondsLeft / 25 * 100) + '%';
     if (count) count.textContent = S.secondsLeft;
     if (S.secondsLeft <= 0) {
       clearInterval(S.timerInterval);
