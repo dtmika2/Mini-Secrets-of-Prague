@@ -545,6 +545,7 @@ function stopAllSounds() {
 /* ─── STATE ─── */
 let S = {
   screen:        'start',  // start | name | question | result | scoreboard
+  deck:          [],       // shuffled copy of QS for the current playthrough
   name:          '',
   curQ:          0,
   score:         0,
@@ -562,6 +563,31 @@ function resetQuiz() {
   S.secondsLeft = 0;
   S.curQ = 0; S.score = 0; S.correct = 0;
   S.answered = false; S.chosen = null;
+  S.deck = buildDeck();
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* A freshly shuffled copy of the questions for each playthrough: the options are
+   reordered and `correct` is remapped to wherever the right answer landed.
+   Authoring every question with the answer first is convenient to read, but
+   players spot the pattern within two questions — and on a shared tablet they
+   can simply copy whoever went before them. */
+function buildDeck() {
+  return QS.map(q => {
+    const order = shuffle([0, 1, 2]);
+    return Object.assign({}, q, {
+      opts:    order.map(i => q.opts[i]),
+      correct: order.indexOf(q.correct)
+    });
+  });
 }
 
 /* ─── STORAGE ─── */
@@ -702,7 +728,9 @@ function nameEntry() {
 
 /* QUESTION */
 function question() {
-  const q = QS[S.curQ];
+  // defensive: a reload straight onto this screen would otherwise have no deck
+  if (!S.deck || !S.deck.length) S.deck = buildDeck();
+  const q = S.deck[S.curQ];
   const s = mk('div', 'screen question-screen');
   s.innerHTML = `
     <div class="q-topbar">
