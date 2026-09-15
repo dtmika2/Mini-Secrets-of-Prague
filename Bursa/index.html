@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-  <title>Bursa — Kvíz</title>
+  <title>Bursa - Kvíz</title>
 
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0A0A0A">
@@ -15,7 +15,7 @@
   <meta name="mobile-web-app-capable" content="yes">
 
   <style>
-    /* ── FONT (placeholder — swap for the real Bursa face when it arrives) ── */
+    /* ── FONT (placeholder - swap for the real Bursa face when it arrives) ── */
     @font-face {
       font-family: 'Archivo';
       src: url('fonts/archivo-var-latin-ext.woff2') format('woff2');
@@ -45,7 +45,7 @@
       --ink:        #0A0A0A;
       --ink-dim:    #6E6E68;
       --mint:       #00FA9E;
-      --mint-text:  #00875A;   /* mint is unreadable as text on paper — this is its accessible sibling */
+      --mint-text:  #00875A;   /* mint is unreadable as text on paper - this is its accessible sibling */
       --wrong:      #FF3B2F;
       --edge:       2px;
     }
@@ -150,7 +150,7 @@
     .logo-hero { width: clamp(180px, 26vw, 560px); height: auto; display: block; }
     .logo-mark { width: clamp(72px, 8vw, 175px); height: auto; display: block; }
 
-    /* Green wordmark pinned bottom-centre — see LOGO_SCREENS for where it shows.
+    /* Green wordmark pinned bottom-centre - see LOGO_SCREENS for where it shows.
        Uses the deeper green (--mint-text, #00875A) rather than #00FA9E: as thin
        strokes on paper the bright mint washes out, even though it is the same
        value the primary buttons are filled with. */
@@ -578,7 +578,7 @@ function shuffle(arr) {
 /* A freshly shuffled copy of the questions for each playthrough: the options are
    reordered and `correct` is remapped to wherever the right answer landed.
    Authoring every question with the answer first is convenient to read, but
-   players spot the pattern within two questions — and on a shared tablet they
+   players spot the pattern within two questions - and on a shared tablet they
    can simply copy whoever went before them. */
 function buildDeck() {
   return QS.map(q => {
@@ -609,7 +609,7 @@ function pushScore() {
 
 /* ─── SHEET SYNC + OFFLINE QUEUE ───
    The POST is mode:'no-cors', so the response is opaque and an HTTP-level
-   failure is invisible to us. Only an outright network failure rejects — which
+   failure is invisible to us. Only an outright network failure rejects - which
    is exactly what the queue exists for: venue wi-fi dropping out. */
 function sheetConfigured() {
   return SHEET_URL && !SHEET_URL.startsWith('PASTE_');
@@ -681,7 +681,7 @@ function start() {
     ${LOGO_HERO}
     <h1 class="display d-xl">Kvíz</h1>
     <p class="eyebrow">Maso · Oheň · Pivo</p>
-    <p class="lede">Šest otázek o pivu, mase a Burse. Na každou máš ${TIME_LIMIT} sekund — čím dřív odpovíš, tím víc bodů získáš.</p>
+    <p class="lede">Šest otázek o pivu, mase a Burse. Na každou máš ${TIME_LIMIT} sekund - čím dřív odpovíš, tím víc bodů získáš.</p>
     <div class="btn-row">
       <button class="btn btn-xl btn-primary" id="bStart">Začít →</button>
       <button class="btn btn-xl" id="bStartSB">Žebříček</button>
@@ -798,13 +798,13 @@ function answer(s, q, idx) {
 
   if (ok) {
     playSound('correct');
-    fb.innerHTML = `<span class="fb-head">Správně!</span> +${total} ${bodu(total)} — ${q.pts} za odpověď, ${bonus} za zbývající čas (${S.secondsLeft} s).${note}`;
+    fb.innerHTML = `<span class="fb-head">Správně!</span> +${total} ${bodu(total)} - ${q.pts} za odpověď, ${bonus} za zbývající čas (${S.secondsLeft} s).${note}`;
   } else if (idx === -1) {
     playSound('wrong');
-    fb.innerHTML = `<span class="fb-head">Čas vypršel!</span> Správná odpověď byla ${LETTERS[q.correct]} — ${esc(q.opts[q.correct])}.${note}`;
+    fb.innerHTML = `<span class="fb-head">Čas vypršel!</span> Správná odpověď byla ${LETTERS[q.correct]} - ${esc(q.opts[q.correct])}.${note}`;
   } else {
     playSound('wrong');
-    fb.innerHTML = `<span class="fb-head">Špatně.</span> Správná odpověď byla ${LETTERS[q.correct]} — ${esc(q.opts[q.correct])}.${note}`;
+    fb.innerHTML = `<span class="fb-head">Špatně.</span> Správná odpověď byla ${LETTERS[q.correct]} - ${esc(q.opts[q.correct])}.${note}`;
   }
 
   fb.className = `feedback-text show ${ok ? 'correct' : 'wrong'}`;
@@ -880,7 +880,7 @@ function scoreboard() {
 
   let tbody = '';
   if (!rows.length) {
-    tbody = `<tr><td colspan="4" class="sb-empty">Zatím žádné skóre — buď první!</td></tr>`;
+    tbody = `<tr><td colspan="4" class="sb-empty">Zatím žádné skóre - buď první!</td></tr>`;
   } else {
     rows.forEach((r, i) => {
       const me   = i === S.meIdx ? 'me' : '';

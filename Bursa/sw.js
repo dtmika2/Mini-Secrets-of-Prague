@@ -1,7 +1,7 @@
-/* Bursa Kvíz — service worker.
+/* Bursa Kvíz - service worker.
    Bump CACHE whenever any precached file changes, or installed apps will keep
    serving the old questions from the previous cache. */
-const CACHE = 'bursa-v6';
+const CACHE = 'bursa-v7';
 
 const PRECACHE = [
   './',
@@ -27,7 +27,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE)
       // addAll is all-or-nothing, so one bad path would leave the app with no
-      // cache at all — cache each file on its own and tolerate misses instead.
+      // cache at all - cache each file on its own and tolerate misses instead.
       //
       // cache:'reload' is essential, not cosmetic: the page's <audio> elements
       // preload with Range requests, so the HTTP cache holds 206 Partial
@@ -79,7 +79,7 @@ self.addEventListener('fetch', event => {
   }
 
   // Everything else: cache first, then network (and cache what comes back).
-  // Status must be exactly 200 — a 206 from a media Range request cannot be
+  // Status must be exactly 200 - a 206 from a media Range request cannot be
   // stored, and Cache.put would reject on it.
   event.respondWith(
     caches.match(req).then(hit => hit || fetch(req).then(res => {

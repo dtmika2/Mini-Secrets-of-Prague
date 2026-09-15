@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Secrets of Prague — The Welcome Quiz</title>
+  <title>Secrets of Prague - The Welcome Quiz</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cagliostro&family=Cinzel:wght@400;600;700;900&family=Raleway:wght@300;400;500;600;700&display=swap');
 
@@ -473,7 +473,7 @@
       align-self: center;
     }
 
-    /* correct answer AND player chose it — bright celebratory green */
+    /* correct answer AND player chose it - bright celebratory green */
     .opt-btn.state-correct {
       opacity: 1 !important;
       background: linear-gradient(160deg, #a0f080 0%, #48c840 35%, #2ea02e 100%) !important;
@@ -483,7 +483,7 @@
     .opt-btn.state-correct .opt-letter,
     .opt-btn.state-correct .opt-text { color: #041204 !important; }
 
-    /* correct answer revealed after player chose wrong — softer, informational green */
+    /* correct answer revealed after player chose wrong - softer, informational green */
     .opt-btn.state-correct-reveal {
       opacity: 1 !important;
       background: linear-gradient(160deg, #60a860 0%, #3a7e3a 40%, #2a602a 100%) !important;
@@ -1128,7 +1128,7 @@ function scoreboard() {
 
   let tbody = '';
   if (!rows.length) {
-    tbody = `<tr><td colspan="4" class="sb-empty">No scores yet — be the first!</td></tr>`;
+    tbody = `<tr><td colspan="4" class="sb-empty">No scores yet - be the first!</td></tr>`;
   } else {
     rows.forEach((r, i) => {
       const me    = i === S.meIdx ? 'me' : '';

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bursa — Správa žebříčku</title>
+  <title>Bursa - Správa žebříčku</title>
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#0A0A0A">
   <style>
@@ -126,7 +126,7 @@
 <div class="page">
   <img class="logo-mark" src="assets/bursa-logo-ink.svg" alt="Bursa">
   <h1>Správa žebříčku</h1>
-  <p class="status-bar" id="status">—</p>
+  <p class="status-bar" id="status">-</p>
 
   <!-- RESTORE -->
   <div class="card">
@@ -163,7 +163,7 @@
 </div>
 
 <script>
-/* Paste the Bursa Apps Script web-app URL here — must match the one in index.html. */
+/* Paste the Bursa Apps Script web-app URL here - must match the one in index.html. */
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzKXXil9toHA0IZEg2TV6wjstHal1vMOfJIADcn7aAoPgGUtv3WKprh_aJpFcexYNgfAQ/exec';
 const STORE_KEY = 'bursaScores_v1';
 const QUEUE_KEY = 'bursaPendingScores_v1';
@@ -207,7 +207,7 @@ function refreshPreview() {
 
 async function restoreFromSheet() {
   if (!sheetConfigured()) {
-    setStatus('Není nastavená adresa Google Sheetu — doplň SHEET_URL v editor.html, index.html i scoreboard.html.', 'fail');
+    setStatus('Není nastavená adresa Google Sheetu - doplň SHEET_URL v editor.html, index.html i scoreboard.html.', 'fail');
     return;
   }
   const btn = document.getElementById('btnRestore');
@@ -221,7 +221,7 @@ async function restoreFromSheet() {
       scores = JSON.parse(text);
     } catch {
       if (text.trim().startsWith('<'))
-        throw new Error('Apps Script vrátil HTML stránku — zkontroluj, že nasazení má „Kdo má přístup: Kdokoli", a nasaď znovu.');
+        throw new Error('Apps Script vrátil HTML stránku - zkontroluj, že nasazení má „Kdo má přístup: Kdokoli", a nasaď znovu.');
       throw new Error('Neplatná odpověď: ' + text.slice(0, 120));
     }
     if (!Array.isArray(scores)) throw new Error('Neočekávaná odpověď z tabulky.');
@@ -238,7 +238,7 @@ async function restoreFromSheet() {
 }
 
 function wipeLocal() {
-  if (!confirm('Smazat všechna místní skóre?\n\nVymaže se pouze local storage — Google Sheet zůstane nedotčený.')) return;
+  if (!confirm('Smazat všechna místní skóre?\n\nVymaže se pouze local storage - Google Sheet zůstane nedotčený.')) return;
   localStorage.removeItem(STORE_KEY);
   localStorage.removeItem(QUEUE_KEY);
   setStatus('Místní žebříček smazán.', 'fail');
@@ -247,7 +247,7 @@ function wipeLocal() {
 
 setStatus(sheetConfigured()
   ? 'Připraveno.'
-  : 'Google Sheet zatím není nastavený — skóre se ukládají jen do tohoto prohlížeče.');
+  : 'Google Sheet zatím není nastavený - skóre se ukládají jen do tohoto prohlížeče.');
 refreshPreview();
 </script>
 </body>

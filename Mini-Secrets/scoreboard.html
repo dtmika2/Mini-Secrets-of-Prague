@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Scoreboard — Secrets of Prague</title>
+  <title>Live Scoreboard - Secrets of Prague</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cagliostro&family=Cinzel:wght@400;600;700;900&family=Raleway:wght@300;400;500;600;700&display=swap');
 
@@ -226,7 +226,7 @@ function startScrollCycle(wrap) {
     if (maxScroll <= 0) { scrollTimer = null; return; }
 
     let last = performance.now();
-    let pos  = 0; // float position — never read back from scrollTop to avoid rounding loss
+    let pos  = 0; // float position - never read back from scrollTop to avoid rounding loss
     function step() {
       const now = performance.now();
       const dt  = Math.min(now - last, 100);
@@ -260,7 +260,7 @@ async function render() {
   wrap.scrollTop = 0;
 
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="4" class="sb-empty">No scores yet — be the first!</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="sb-empty">No scores yet - be the first!</td></tr>`;
     return;
   }
 

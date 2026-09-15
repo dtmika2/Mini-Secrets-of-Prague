@@ -1,5 +1,5 @@
 /**
- * Bursa Kvíz — Google Apps Script backend.
+ * Bursa Kvíz - Google Apps Script backend.
  *
  * This is NOT part of the website. It lives inside the Google Sheet and is what
  * turns it into something the quiz can POST to and the scoreboard can GET from.
@@ -15,10 +15,10 @@
  *                                             get an HTML sign-in page instead
  *                                             of JSON.
  *  4. Click Deploy and approve the authorization prompt (it will warn the app is
- *     "unverified" — that is normal for your own script; choose Advanced → Go to…).
+ *     "unverified" - that is normal for your own script; choose Advanced → Go to…).
  *  5. Copy the Web app URL. It ends in /exec and looks like
  *       https://script.google.com/macros/s/AKfycb..../exec
- *     That URL — not the spreadsheet URL — goes into SHEET_URL in index.html,
+ *     That URL - not the spreadsheet URL - goes into SHEET_URL in index.html,
  *     scoreboard.html and editor.html.
  *
  * No time-based or on-edit trigger is needed: a web app deployment calls doGet

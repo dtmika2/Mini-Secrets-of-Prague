@@ -163,7 +163,7 @@
 <div class="page">
   <h1>SCOREBOARD EDITOR</h1>
   <div class="divider"></div>
-  <p class="status-bar" id="status">—</p>
+  <p class="status-bar" id="status">-</p>
 
   <!-- RESTORE -->
   <div class="card">
@@ -181,7 +181,7 @@
   <div class="card">
     <div class="card-title">Wipe Local Scoreboard</div>
     <div class="card-desc">
-      Removes all scores from local storage only. The Google Sheet is not affected —
+      Removes all scores from local storage only. The Google Sheet is not affected -
       you can always restore from it afterwards.
     </div>
     <button class="btn btn-wipe" onclick="wipeLocal()">
@@ -252,7 +252,7 @@ async function restoreFromSheet() {
       scores = JSON.parse(text);
     } catch {
       if (text.trim().startsWith('<'))
-        throw new Error('Apps Script returned an HTML page — open Apps Script, check the deployment still has "Who has access: Anyone", and redeploy.');
+        throw new Error('Apps Script returned an HTML page - open Apps Script, check the deployment still has "Who has access: Anyone", and redeploy.');
       throw new Error('Invalid response: ' + text.slice(0, 120));
     }
     if (!Array.isArray(scores)) throw new Error('Unexpected response from sheet.');
@@ -269,7 +269,7 @@ async function restoreFromSheet() {
 }
 
 function wipeLocal() {
-  if (!confirm('Wipe all local scores?\n\nThis only clears local storage — the Google Sheet is untouched.')) return;
+  if (!confirm('Wipe all local scores?\n\nThis only clears local storage - the Google Sheet is untouched.')) return;
   localStorage.removeItem(STORE_KEY);
   setStatus('Local scoreboard wiped.', 'wrong');
   refreshPreview();

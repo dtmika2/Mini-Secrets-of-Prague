@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bursa — Žebříček</title>
+  <title>Bursa - Žebříček</title>
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#0A0A0A">
   <style>
@@ -150,7 +150,7 @@
 </div>
 
 <script>
-/* Paste the Bursa Apps Script web-app URL here — must match the one in index.html. */
+/* Paste the Bursa Apps Script web-app URL here - must match the one in index.html. */
 const SHEET_URL       = 'https://script.google.com/macros/s/AKfycbzKXXil9toHA0IZEg2TV6wjstHal1vMOfJIADcn7aAoPgGUtv3WKprh_aJpFcexYNgfAQ/exec';
 const STORE_KEY       = 'bursaScores_v1';
 const MAX_QS          = 6;
@@ -209,7 +209,7 @@ function startScrollCycle(wrap) {
     if (maxScroll <= 0) { scrollTimer = null; return; }
 
     let last = performance.now();
-    let pos  = 0; // float position — never read back from scrollTop, to avoid rounding loss
+    let pos  = 0; // float position - never read back from scrollTop, to avoid rounding loss
     // setInterval keeps firing when the window isn't focused, unlike rAF
     scrollTicker = setInterval(() => {
       const now = performance.now();
@@ -239,7 +239,7 @@ async function render() {
   wrap.scrollTop = 0;
 
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="4" class="sb-empty">Zatím žádné skóre — buď první!</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="sb-empty">Zatím žádné skóre - buď první!</td></tr>`;
     return;
   }
 
