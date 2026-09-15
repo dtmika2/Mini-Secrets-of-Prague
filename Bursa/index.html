@@ -150,12 +150,16 @@
     .logo-hero { width: clamp(180px, 26vw, 560px); height: auto; display: block; }
     .logo-mark { width: clamp(72px, 8vw, 175px); height: auto; display: block; }
 
-    /* Mint wordmark pinned bottom-left, as on the Prague build. Hidden on the
-       question screen, which carries the black mark in its top bar instead. */
+    /* Green wordmark pinned bottom-centre. Hidden on the question screen, which
+       carries the black mark in its top bar instead. Uses the deeper green
+       (--mint-text, #00875A) rather than #00FA9E: as thin strokes on paper the
+       bright mint washes out, even though it is the same value the primary
+       buttons are filled with. */
     #corner-logo {
       position: fixed;
       bottom: 2.4vh;
-      left: 2vw;
+      left: 50%;
+      transform: translateX(-50%);
       width: clamp(92px, 10vw, 200px);
       height: auto;
       pointer-events: none;
@@ -456,7 +460,7 @@
   </style>
 </head>
 <body>
-<img id="corner-logo" src="assets/bursa-logo.svg" alt="" hidden>
+<img id="corner-logo" src="assets/bursa-logo-deep.svg" alt="" hidden>
 <div id="app"></div>
 <script>
 /* ─── DATA ─── */
