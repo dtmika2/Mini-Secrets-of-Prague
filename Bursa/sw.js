@@ -1,7 +1,7 @@
 /* Bursa Kvíz — service worker.
    Bump CACHE whenever any precached file changes, or installed apps will keep
    serving the old questions from the previous cache. */
-const CACHE = 'bursa-v3';
+const CACHE = 'bursa-v4';
 
 const PRECACHE = [
   './',

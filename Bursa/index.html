@@ -150,11 +150,10 @@
     .logo-hero { width: clamp(180px, 26vw, 560px); height: auto; display: block; }
     .logo-mark { width: clamp(72px, 8vw, 175px); height: auto; display: block; }
 
-    /* Green wordmark pinned bottom-centre. Hidden on the question screen, which
-       carries the black mark in its top bar instead. Uses the deeper green
-       (--mint-text, #00875A) rather than #00FA9E: as thin strokes on paper the
-       bright mint washes out, even though it is the same value the primary
-       buttons are filled with. */
+    /* Green wordmark pinned bottom-centre — see LOGO_SCREENS for where it shows.
+       Uses the deeper green (--mint-text, #00875A) rather than #00FA9E: as thin
+       strokes on paper the bright mint washes out, even though it is the same
+       value the primary buttons are filled with. */
     #corner-logo {
       position: fixed;
       bottom: 2.4vh;
@@ -634,12 +633,16 @@ window.addEventListener('online', flushQueue);
 const app        = document.getElementById('app');
 const cornerLogo = document.getElementById('corner-logo');
 
+/* Screens that show the bottom-centre wordmark. The start screen is excluded
+   because it already carries the big hero lockup, and the question screen
+   because it carries the black mark in its top bar. */
+const LOGO_SCREENS = new Set(['name', 'result', 'scoreboard']);
+
 function render() {
   const prev = app.querySelector('.screen');
   if (prev) prev.remove();
   ({ start, name: nameEntry, question, result, scoreboard })[S.screen]();
-  // every screen but the question carries the mint wordmark bottom-left
-  cornerLogo.hidden = S.screen === 'question';
+  cornerLogo.hidden = !LOGO_SCREENS.has(S.screen);
 }
 
 const LOGO_HERO = '<img class="logo-hero" src="assets/bursa-logo-ink.svg" alt="Bursa">';
