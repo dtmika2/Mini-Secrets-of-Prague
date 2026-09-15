@@ -150,6 +150,20 @@
     .logo-hero { width: clamp(180px, 26vw, 560px); height: auto; display: block; }
     .logo-mark { width: clamp(72px, 8vw, 175px); height: auto; display: block; }
 
+    /* Mint wordmark pinned bottom-left, as on the Prague build. Hidden on the
+       question screen, which carries the black mark in its top bar instead. */
+    #corner-logo {
+      position: fixed;
+      bottom: 2.4vh;
+      left: 2vw;
+      width: clamp(92px, 10vw, 200px);
+      height: auto;
+      pointer-events: none;
+      user-select: none;
+      z-index: 10;
+    }
+    #corner-logo[hidden] { display: none; }
+
     /* ── START ── */
     .start-screen { gap: 3vh; }
 
@@ -442,6 +456,7 @@
   </style>
 </head>
 <body>
+<img id="corner-logo" src="assets/bursa-logo.svg" alt="" hidden>
 <div id="app"></div>
 <script>
 /* ─── DATA ─── */
@@ -612,12 +627,15 @@ async function flushQueue() {
 window.addEventListener('online', flushQueue);
 
 /* ─── RENDER ─── */
-const app = document.getElementById('app');
+const app        = document.getElementById('app');
+const cornerLogo = document.getElementById('corner-logo');
 
 function render() {
   const prev = app.querySelector('.screen');
   if (prev) prev.remove();
   ({ start, name: nameEntry, question, result, scoreboard })[S.screen]();
+  // every screen but the question carries the mint wordmark bottom-left
+  cornerLogo.hidden = S.screen === 'question';
 }
 
 const LOGO_HERO = '<img class="logo-hero" src="assets/bursa-logo-ink.svg" alt="Bursa">';
