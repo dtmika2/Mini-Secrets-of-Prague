@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bursa — Správa žebříčku</title>
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#0A0A0A">
+  <style>
+    @font-face {
+      font-family: 'Archivo';
+      src: url('fonts/archivo-var-latin-ext.woff2') format('woff2');
+      font-weight: 100 900; font-stretch: 62% 125%; font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+                     U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+                     U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: 'Archivo';
+      src: url('fonts/archivo-var-latin.woff2') format('woff2');
+      font-weight: 100 900; font-stretch: 62% 125%; font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+                     U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+                     U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --paper:   #F2F1EE;
+      --paper-2: #E7E6E2;
+      --ink:     #0A0A0A;
+      --ink-dim: #6E6E68;
+      --mint:    #00FA9E;
+      --wrong:   #FF3B2F;
+      --edge:    2px;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Archivo', 'Helvetica Neue', Arial, system-ui, sans-serif;
+      font-stretch: 100%;
+      -webkit-font-smoothing: antialiased;
+      padding: 4vh 5vw;
+    }
+
+    .page { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.6rem; }
+
+    .logo-mark { width: 120px; height: auto; display: block; }
+    h1 {
+      font-weight: 900; font-stretch: 125%;
+      text-transform: uppercase; letter-spacing: -0.015em;
+      line-height: 0.9;
+      font-size: clamp(1.8rem, 4.5vw, 3rem);
+    }
+
+    .status-bar {
+      border: var(--edge) solid var(--ink);
+      background: var(--paper-2);
+      padding: 0.8em 1.1em;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .status-bar.ok   { background: var(--mint); }
+    .status-bar.fail { background: var(--wrong); color: var(--paper); }
+
+    .card {
+      border: var(--edge) solid var(--ink);
+      padding: 1.4rem 1.4rem 1.5rem;
+      display: flex; flex-direction: column; gap: 0.8rem;
+      align-items: flex-start;
+    }
+    .card-title {
+      font-weight: 900; font-stretch: 118%;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      font-size: 1.1rem;
+    }
+    .card-desc { font-weight: 400; font-size: 0.95rem; line-height: 1.5; color: var(--ink); }
+    .card-desc code { background: var(--paper-2); padding: 0.1em 0.35em; }
+
+    .btn {
+      font-family: inherit;
+      font-weight: 800; font-stretch: 112%;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      font-size: 0.9rem;
+      color: var(--ink);
+      background: transparent;
+      border: var(--edge) solid var(--ink);
+      border-radius: 0;
+      padding: 0.75em 1.6em;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, transform 0.07s;
+    }
+    .btn:not(:disabled):hover  { background: var(--mint); }
+    .btn:not(:disabled):active { transform: translateY(2px); }
+    .btn:disabled { opacity: 0.3; cursor: default; }
+    .btn-wipe:not(:disabled):hover { background: var(--wrong); color: var(--paper); border-color: var(--wrong); }
+
+    .preview-wrap {
+      width: 100%;
+      max-height: 45vh; overflow-y: auto;
+      border: var(--edge) solid var(--ink);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      position: sticky; top: 0;
+      background: var(--ink); color: var(--paper);
+      font-weight: 800; font-stretch: 112%;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      font-size: 0.72rem;
+      padding: 0.7em 1em;
+      text-align: left;
+    }
+    td {
+      font-weight: 500; font-size: 0.92rem;
+      padding: 0.55em 1em;
+      border-bottom: 1px solid rgba(10, 10, 10, 0.14);
+    }
+    tr:last-child td { border-bottom: none; }
+    .empty-note { padding: 2em; text-align: center; color: var(--ink-dim); font-weight: 500; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <img class="logo-mark" src="assets/bursa-logo-ink.svg" alt="Bursa">
+  <h1>Správa žebříčku</h1>
+  <p class="status-bar" id="status">—</p>
+
+  <!-- RESTORE -->
+  <div class="card">
+    <div class="card-title">Obnovit z Google Sheetu</div>
+    <div class="card-desc">
+      Načte všechna skóre z tabulky a nahraje je do local storage tohoto prohlížeče.
+      Použij po smazání nebo když žebříček zůstal prázdný.
+    </div>
+    <button class="btn" id="btnRestore" onclick="restoreFromSheet()">Obnovit skóre</button>
+  </div>
+
+  <!-- WIPE -->
+  <div class="card">
+    <div class="card-title">Smazat místní žebříček</div>
+    <div class="card-desc">
+      Smaže skóre pouze z local storage tohoto prohlížeče. Google Sheet zůstane nedotčený,
+      takže jde kdykoli obnovit zpět.
+    </div>
+    <button class="btn btn-wipe" onclick="wipeLocal()">Smazat místní skóre</button>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="card" style="align-items: stretch;">
+    <div class="card-title">Aktuální místní skóre</div>
+    <div class="preview-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Jméno</th><th>Body</th><th>Správně</th><th>Datum</th></tr>
+        </thead>
+        <tbody id="previewBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Paste the Bursa Apps Script web-app URL here — must match the one in index.html. */
+const SHEET_URL = 'PASTE_BURSA_APPS_SCRIPT_URL_HERE';
+const STORE_KEY = 'bursaScores_v1';
+const QUEUE_KEY = 'bursaPendingScores_v1';
+const MAX_QS    = 6;
+
+function sheetConfigured() {
+  return SHEET_URL && !SHEET_URL.startsWith('PASTE_');
+}
+
+function setStatus(msg, cls = '') {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status-bar ' + cls;
+}
+
+function loadLocal() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+  catch { return []; }
+}
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function refreshPreview() {
+  const rows  = loadLocal();
+  const tbody = document.getElementById('previewBody');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-note">Žádná místní skóre.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map((r, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${esc(r.name)}</td>
+      <td>${r.score}</td>
+      <td>${r.correct} / ${MAX_QS}</td>
+      <td>${esc(r.date || '')}</td>
+    </tr>`).join('');
+}
+
+async function restoreFromSheet() {
+  if (!sheetConfigured()) {
+    setStatus('Není nastavená adresa Google Sheetu — doplň SHEET_URL v editor.html, index.html i scoreboard.html.', 'fail');
+    return;
+  }
+  const btn = document.getElementById('btnRestore');
+  btn.disabled = true;
+  setStatus('Načítám z Google Sheetu…');
+  try {
+    const res  = await fetch(SHEET_URL, { redirect: 'follow' });
+    const text = await res.text();
+    let scores;
+    try {
+      scores = JSON.parse(text);
+    } catch {
+      if (text.trim().startsWith('<'))
+        throw new Error('Apps Script vrátil HTML stránku — zkontroluj, že nasazení má „Kdo má přístup: Kdokoli", a nasaď znovu.');
+      throw new Error('Neplatná odpověď: ' + text.slice(0, 120));
+    }
+    if (!Array.isArray(scores)) throw new Error('Neočekávaná odpověď z tabulky.');
+    scores.sort((a, b) => b.score - a.score || b.correct - a.correct);
+    if (scores.length > 100) scores.length = 100;
+    localStorage.setItem(STORE_KEY, JSON.stringify(scores));
+    setStatus(`Obnoveno ${scores.length} skóre.`, 'ok');
+    refreshPreview();
+  } catch (err) {
+    setStatus('Obnovení selhalo: ' + err.message, 'fail');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function wipeLocal() {
+  if (!confirm('Smazat všechna místní skóre?\n\nVymaže se pouze local storage — Google Sheet zůstane nedotčený.')) return;
+  localStorage.removeItem(STORE_KEY);
+  localStorage.removeItem(QUEUE_KEY);
+  setStatus('Místní žebříček smazán.', 'fail');
+  refreshPreview();
+}
+
+setStatus(sheetConfigured()
+  ? 'Připraveno.'
+  : 'Google Sheet zatím není nastavený — skóre se ukládají jen do tohoto prohlížeče.');
+refreshPreview();
+</script>
+</body>
+</html>

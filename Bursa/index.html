@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>Bursa — Kvíz</title>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0A0A0A">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Bursa Kvíz">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <style>
+    /* ── FONT (placeholder — swap for the real Bursa face when it arrives) ── */
+    @font-face {
+      font-family: 'Archivo';
+      src: url('fonts/archivo-var-latin-ext.woff2') format('woff2');
+      font-weight: 100 900;
+      font-stretch: 62% 125%;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+                     U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+                     U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: 'Archivo';
+      src: url('fonts/archivo-var-latin.woff2') format('woff2');
+      font-weight: 100 900;
+      font-stretch: 62% 125%;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+                     U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+                     U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --paper:      #F2F1EE;
+      --paper-2:    #E7E6E2;
+      --ink:        #0A0A0A;
+      --ink-dim:    #6E6E68;
+      --mint:       #00FA9E;
+      --mint-text:  #00875A;   /* mint is unreadable as text on paper — this is its accessible sibling */
+      --wrong:      #FF3B2F;
+      --edge:       2px;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Archivo', 'Helvetica Neue', Arial, system-ui, sans-serif;
+      font-stretch: 100%;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #app {
+      width: 100vw; height: 100vh; height: 100dvh;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+
+    .screen {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 4vh 5vw;
+      gap: 2.4vh;
+      position: relative;
+      animation: rise 0.28s cubic-bezier(0.2, 0.7, 0.3, 1);
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── TYPE ── */
+    .display {
+      font-weight: 900;
+      font-stretch: 125%;
+      text-transform: uppercase;
+      letter-spacing: -0.015em;
+      line-height: 0.88;
+      text-align: center;
+    }
+    .d-xl { font-size: clamp(3.2rem, 11vw, 13rem); }
+    .d-lg { font-size: clamp(2rem, 5.2vw, 6.4rem); }
+
+    .eyebrow {
+      font-weight: 700;
+      font-stretch: 110%;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: clamp(0.85rem, 1.6vw, 1.9rem);
+      color: var(--mint-text);
+      text-align: center;
+    }
+    .lede {
+      font-weight: 400;
+      font-size: clamp(0.95rem, 1.5vw, 1.75rem);
+      line-height: 1.5;
+      text-align: center;
+      max-width: 52ch;
+      text-wrap: pretty;
+    }
+    .meta {
+      font-weight: 600;
+      font-stretch: 105%;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: clamp(0.7rem, 1.15vw, 1.35rem);
+      color: var(--ink-dim);
+    }
+
+    .rule { width: min(560px, 70vw); height: 2px; background: var(--ink); flex-shrink: 0; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      font-family: inherit;
+      font-weight: 800;
+      font-stretch: 112%;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+      background: transparent;
+      border: var(--edge) solid var(--ink);
+      border-radius: 0;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.12s, color 0.12s, transform 0.07s;
+    }
+    .btn-xl { font-size: clamp(1rem, 1.9vw, 2.1rem); padding: 0.92em 2.4em; }
+    .btn-md { font-size: clamp(0.8rem, 1.35vw, 1.5rem); padding: 0.85em 1.9em; }
+    .btn-primary { background: var(--mint); }
+    .btn:not(:disabled):hover  { background: var(--mint); }
+    .btn:not(:disabled):active { transform: translateY(2px); }
+    .btn:disabled { opacity: 0.28; cursor: default; }
+
+    .btn-row { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+
+    /* ── LOGO ── */
+    .logo-hero { width: clamp(180px, 26vw, 560px); height: auto; display: block; }
+    .logo-mark { width: clamp(72px, 8vw, 175px); height: auto; display: block; }
+
+    /* ── START ── */
+    .start-screen { gap: 3vh; }
+
+    #bInstall { display: none; }
+    #bInstall.show { display: inline-block; }
+
+    /* ── NAME ── */
+    .name-input {
+      font-family: inherit;
+      font-weight: 500;
+      font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+      color: var(--ink);
+      background: var(--paper);
+      border: var(--edge) solid var(--ink);
+      border-radius: 0;
+      padding: 0.7em 1.1em;
+      text-align: center;
+      width: min(460px, 76vw);
+      outline: none;
+      caret-color: var(--ink);
+    }
+    .name-input::placeholder { color: var(--ink-dim); opacity: 0.65; }
+    .name-input:focus { box-shadow: 0 0 0 4px var(--mint); }
+
+    /* ── QUESTION ── */
+    .question-screen { justify-content: flex-start; padding: 0; gap: 0; }
+
+    .q-topbar {
+      width: 100%;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1.5vw;
+      padding: 2vh 4vw 1.6vh;
+      border-bottom: var(--edge) solid var(--ink);
+      flex-shrink: 0;
+    }
+    .q-topbar-mid {
+      display: flex; align-items: center; gap: 1.4vw;
+      flex-wrap: wrap; justify-content: center;
+    }
+    .q-num {
+      font-weight: 800; font-stretch: 112%;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      font-size: clamp(0.9rem, 1.6vw, 2rem);
+    }
+    .q-pts {
+      font-weight: 800; font-stretch: 112%;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      font-size: clamp(0.9rem, 1.6vw, 2rem);
+      background: var(--mint);
+      border: var(--edge) solid var(--ink);
+      padding: 0.18em 0.7em;
+      white-space: nowrap;
+    }
+    .btn-abandon {
+      font-family: inherit;
+      font-weight: 700; font-stretch: 105%;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      font-size: clamp(0.65rem, 1.05vw, 1.2rem);
+      color: var(--ink-dim);
+      background: transparent;
+      border: 1px solid var(--ink-dim);
+      border-radius: 0;
+      padding: 0.45em 0.9em;
+      cursor: pointer;
+      transition: color 0.12s, border-color 0.12s, background 0.12s;
+      white-space: nowrap;
+    }
+    .btn-abandon:hover { color: var(--paper); background: var(--wrong); border-color: var(--wrong); }
+
+    .timer-row {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1.6vh 4vw 0;
+      width: 100%; flex-shrink: 0;
+    }
+    .timer-count {
+      font-weight: 900; font-stretch: 118%;
+      font-size: clamp(1.1rem, 2vw, 2.4rem);
+      min-width: 2.2ch; text-align: right;
+      font-variant-numeric: tabular-nums;
+      transition: color 0.2s;
+    }
+    .timer-count.low { color: var(--wrong); }
+    .timer-track {
+      flex: 1; height: clamp(12px, 1.3vh, 22px);
+      border: var(--edge) solid var(--ink);
+      background: var(--paper);
+      overflow: hidden;
+    }
+    .timer-fill {
+      height: 100%; width: 100%;
+      background: var(--mint);
+      transition: width 1s linear, background 0.25s;
+    }
+    .timer-fill.low { background: var(--wrong); }
+
+    .q-body {
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 3vh 4vw 11vh;
+      gap: clamp(2rem, 5vh, 4.5rem);
+      width: 100%; min-height: 0;
+    }
+    .q-text {
+      font-weight: 800;
+      font-stretch: 112%;
+      font-size: clamp(1.45rem, 3.6vw, 5.4rem);
+      line-height: 1.12;
+      letter-spacing: -0.015em;
+      text-align: center;
+      max-width: 24ch;
+      text-wrap: balance;
+    }
+
+    .q-options-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.6vw;
+      width: 100%;
+    }
+
+    .opt-btn {
+      position: relative;
+      font-family: inherit;
+      color: var(--ink);
+      background: var(--paper);
+      border: var(--edge) solid var(--ink);
+      border-radius: 0;
+      cursor: pointer;
+      user-select: none;
+      display: flex; align-items: center; justify-content: center;
+      padding: clamp(2rem, 5vh, 3.4rem) 1.2rem clamp(1.4rem, 3vh, 2.2rem);
+      min-height: clamp(110px, 20vh, 320px);
+      text-align: center;
+      transition: background 0.12s, color 0.12s, transform 0.07s, opacity 0.2s, box-shadow 0.2s;
+    }
+    .opt-letter {
+      position: absolute; top: 0; left: 0;
+      width: 2.1em; height: 2.1em;
+      display: grid; place-items: center;
+      font-weight: 900; font-stretch: 118%;
+      font-size: clamp(1rem, 1.9vw, 2.2rem);
+      background: var(--mint);
+      border-right: var(--edge) solid var(--ink);
+      border-bottom: var(--edge) solid var(--ink);
+      color: var(--ink);
+      transition: background 0.12s, color 0.12s;
+    }
+    .opt-text {
+      font-weight: 600;
+      font-size: clamp(1.1rem, 2.3vw, 3.2rem);
+      line-height: 1.2;
+      letter-spacing: -0.005em;
+      text-wrap: balance;
+    }
+    .opt-btn:not(:disabled):hover  { background: var(--mint); }
+    .opt-btn:not(:disabled):active { transform: translateY(2px); }
+
+    /* answered states */
+    .opt-btn.state-correct {
+      background: var(--mint);
+      box-shadow: inset 0 0 0 6px var(--ink);
+    }
+    .opt-btn.state-correct-reveal {
+      background: var(--paper);
+      box-shadow: inset 0 0 0 7px var(--mint);
+    }
+    .opt-btn.state-wrong {
+      background: var(--wrong);
+      color: var(--paper);
+    }
+    .opt-btn.state-wrong .opt-letter { background: var(--paper); color: var(--ink); }
+    .opt-btn.state-dim { opacity: 0.26; }
+
+    .q-footer {
+      position: absolute; bottom: 0; left: 0;
+      width: 100%;
+      padding: 1.4vh 4vw 2.2vh;
+      display: flex; flex-direction: column; align-items: center; gap: 1.2vh;
+      background: var(--paper);
+      border-top: var(--edge) solid transparent;
+      transition: border-color 0.2s;
+    }
+    .q-footer.armed { border-top-color: var(--ink); }
+
+    .feedback-text {
+      font-weight: 600;
+      font-size: clamp(0.85rem, 1.5vw, 1.7rem);
+      line-height: 1.4;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(5px);
+      transition: opacity 0.25s, transform 0.25s;
+      max-width: 62ch;
+    }
+    .feedback-text.show { opacity: 1; transform: translateY(0); }
+    .feedback-text .fb-head {
+      font-weight: 900; font-stretch: 115%;
+      text-transform: uppercase; letter-spacing: 0.02em;
+    }
+    .feedback-text.correct .fb-head { color: var(--mint-text); }
+    .feedback-text.wrong   .fb-head { color: var(--wrong); }
+    .feedback-text .fb-note {
+      display: block; margin-top: 0.3em;
+      color: var(--ink-dim); font-weight: 400;
+    }
+
+    .btn-next { opacity: 0; pointer-events: none; transition: opacity 0.25s 0.1s; }
+    .btn-next.show { opacity: 1; pointer-events: auto; }
+
+    /* ── RESULT ── */
+    .result-score {
+      font-weight: 900; font-stretch: 125%;
+      font-size: clamp(4.5rem, 15vw, 17rem);
+      line-height: 0.82;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+    }
+    .result-name {
+      font-weight: 800; font-stretch: 115%;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      font-size: clamp(1rem, 2vw, 2.3rem);
+      background: var(--mint);
+      border: var(--edge) solid var(--ink);
+      padding: 0.25em 0.9em;
+      max-width: 80vw;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .result-correct { font-weight: 600; font-size: clamp(0.95rem, 1.7vw, 1.9rem); }
+    .result-correct strong { font-weight: 900; font-stretch: 118%; }
+
+    /* ── SCOREBOARD ── */
+    .sb-wrap {
+      width: min(960px, 92vw);
+      max-height: 58vh;
+      overflow-y: auto;
+      border: var(--edge) solid var(--ink);
+      background: var(--paper);
+    }
+    .sb-wrap::-webkit-scrollbar { width: 6px; }
+    .sb-wrap::-webkit-scrollbar-track { background: var(--paper-2); }
+    .sb-wrap::-webkit-scrollbar-thumb { background: var(--ink); }
+
+    .sb-table { width: 100%; border-collapse: collapse; }
+    .sb-table thead th {
+      position: sticky; top: 0;
+      background: var(--ink);
+      color: var(--paper);
+      font-weight: 800; font-stretch: 112%;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      font-size: clamp(0.66rem, 1.05vw, 1.2rem);
+      padding: 0.85em 1.2em;
+      text-align: left;
+    }
+    .sb-table td {
+      font-weight: 500;
+      font-size: clamp(0.85rem, 1.35vw, 1.5rem);
+      padding: 0.62em 1.2em;
+      border-bottom: 1px solid rgba(10, 10, 10, 0.14);
+    }
+    .sb-table tr:last-child td { border-bottom: none; }
+    .sb-table th:nth-child(3), .sb-table td:nth-child(3),
+    .sb-table th:nth-child(4), .sb-table td:nth-child(4) { text-align: right; }
+    .sb-table td:nth-child(1) { font-weight: 800; font-variant-numeric: tabular-nums; width: 4.5em; white-space: nowrap; }
+    .sb-table td:nth-child(3) { font-weight: 800; font-variant-numeric: tabular-nums; }
+    .sb-table .me td { background: var(--mint); font-weight: 800; }
+    .sb-table .r1 td:first-child::after { content: ' ★'; }
+    .sb-empty { padding: 3em; text-align: center; color: var(--ink-dim); font-weight: 500; }
+
+    /* ── PORTRAIT / NARROW ── */
+    @media (max-width: 760px), (orientation: portrait) {
+      .q-options-grid { grid-template-columns: 1fr; gap: 1.6vh; }
+      .opt-btn {
+        min-height: clamp(64px, 9vh, 96px);
+        padding: 0.9rem 1rem 0.9rem 4.4rem;
+        justify-content: flex-start; text-align: left;
+      }
+      .opt-letter { height: 100%; width: 3.4rem; border-bottom: none; font-size: 1.15rem; }
+      .opt-text { font-size: clamp(1.05rem, 4.4vw, 1.4rem); }
+      .q-body { padding: 2vh 5vw 15vh; gap: clamp(1.6rem, 4vh, 3rem); }
+      .q-text { max-width: 100%; font-size: clamp(1.35rem, 6vw, 2rem); }
+      /* three items won't sit on one row at this width: keep the logo and the
+         abandon button paired, and drop the counter onto its own line below */
+      .q-topbar { flex-wrap: wrap; gap: 0.7rem 1rem; padding: 1.6vh 5vw 1.4vh; }
+      .q-topbar-mid { order: 3; flex-basis: 100%; gap: 0.7rem; }
+      .logo-mark { width: 64px; }
+      .btn-row { width: 100%; flex-direction: column; align-items: stretch; }
+      .btn-row .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ─── DATA ─── */
+const QS = [
+  {
+    text: "Co přesně znamená zkratka IPA u piva?",
+    opts: ["India Pale Ale", "Imperial Pilsner Ale", "Irish Pale Ale"],
+    correct: 0, pts: 50
+  },
+  {
+    text: "Kolik stupňů má Plzeňský Prazdroj?",
+    opts: ["11,8°", "10,4°", "13,2°"],
+    correct: 0, pts: 70,
+    note: "Běžně se označuje jako dvanáctka."
+  },
+  {
+    text: "Od čeho má Bursa svůj název?",
+    opts: ["Od bývalé burzy masa", "Od latinského slova pro měšec", "Od tureckého města Bursa"],
+    correct: 0, pts: 70
+  },
+  {
+    text: "Jaká je ideální teplota čepování piva?",
+    opts: ["5 až 8 °C", "0 až 3 °C", "10 až 13 °C"],
+    correct: 0, pts: 110
+  },
+  {
+    text: "Po čem je pojmenovaný hamburger?",
+    opts: ["Podle města Hamburk", "Podle šunky (ham)", "Podle řezníka jménem Hamburger"],
+    correct: 0, pts: 110
+  },
+  {
+    text: "Které základní suroviny se do Evropy dovezly z Ameriky?",
+    opts: ["Brambory a rajčata", "Pšenice a žito", "Rýže a čočka"],
+    correct: 0, pts: 160,
+    note: "Z Ameriky k nám doputovaly také kukuřice, kakao a chilli."
+  }
+];
+
+const MAX_PTS    = QS.reduce((s, q) => s + q.pts, 0); // 570
+const LETTERS    = ['A', 'B', 'C'];
+const TIME_LIMIT = 25;
+const STORE_KEY  = 'bursaScores_v1';
+const QUEUE_KEY  = 'bursaPendingScores_v1';
+
+/* Paste the Bursa Apps Script web-app URL here once the new Sheet is deployed.
+   While this stays a placeholder, sendToSheet() no-ops and scores live in
+   localStorage only. */
+const SHEET_URL = 'PASTE_BURSA_APPS_SCRIPT_URL_HERE';
+
+/* ─── CZECH PLURALS ─── */
+function bodu(n) {
+  const h = Math.abs(n) % 100, t = h % 10;
+  if (h > 10 && h < 20) return 'bodů';
+  if (t === 1)          return 'bod';
+  if (t >= 2 && t <= 4) return 'body';
+  return 'bodů';
+}
+
+/* ─── AUDIO ─── */
+const SFX = {
+  correct:   new Audio('sounds/correct.mp3'),
+  wrong:     new Audio('sounds/wrong.mp3'),
+  result:    new Audio('sounds/result.mp3'),
+  countdown: new Audio('sounds/countdown.mp3'),
+};
+SFX.countdown.loop = true;
+
+let _soundTimer = null;
+
+function playSound(key) {
+  const a = SFX[key];
+  if (!a) return;
+  a.currentTime = 0;
+  a.play().catch(() => {});
+}
+
+function stopAllSounds() {
+  clearTimeout(_soundTimer);
+  _soundTimer = null;
+  Object.values(SFX).forEach(a => { a.pause(); a.currentTime = 0; });
+}
+
+/* ─── STATE ─── */
+let S = {
+  screen:        'start',  // start | name | question | result | scoreboard
+  name:          '',
+  curQ:          0,
+  score:         0,
+  correct:       0,
+  answered:      false,
+  chosen:        null,
+  meIdx:         null,
+  timerInterval: null,
+  secondsLeft:   0
+};
+
+function resetQuiz() {
+  clearInterval(S.timerInterval);
+  S.timerInterval = null;
+  S.secondsLeft = 0;
+  S.curQ = 0; S.score = 0; S.correct = 0;
+  S.answered = false; S.chosen = null;
+}
+
+/* ─── STORAGE ─── */
+function loadScores() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+  catch { return []; }
+}
+
+function pushScore() {
+  const rows = loadScores();
+  rows.push({ name: S.name, score: S.score, correct: S.correct,
+              date: new Date().toLocaleDateString('cs-CZ') });
+  rows.sort((a, b) => b.score - a.score || b.correct - a.correct);
+  if (rows.length > 100) rows.length = 100;
+  localStorage.setItem(STORE_KEY, JSON.stringify(rows));
+  S.meIdx = rows.findIndex(r => r.name === S.name && r.score === S.score && r.correct === S.correct);
+  sendToSheet({ name: S.name, score: S.score, correct: S.correct });
+}
+
+/* ─── SHEET SYNC + OFFLINE QUEUE ───
+   The POST is mode:'no-cors', so the response is opaque and an HTTP-level
+   failure is invisible to us. Only an outright network failure rejects — which
+   is exactly what the queue exists for: venue wi-fi dropping out. */
+function sheetConfigured() {
+  return SHEET_URL && !SHEET_URL.startsWith('PASTE_');
+}
+
+function loadQueue() {
+  try { return JSON.parse(localStorage.getItem(QUEUE_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveQueue(q) {
+  try { localStorage.setItem(QUEUE_KEY, JSON.stringify(q.slice(-200))); } catch {}
+}
+
+function postToSheet(payload) {
+  return fetch(SHEET_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify(payload)
+  });
+}
+
+function sendToSheet(payload) {
+  if (!sheetConfigured()) return;
+  postToSheet(payload).catch(() => {
+    const q = loadQueue();
+    q.push(payload);
+    saveQueue(q);
+  });
+}
+
+async function flushQueue() {
+  if (!sheetConfigured() || !navigator.onLine) return;
+  const q = loadQueue();
+  if (!q.length) return;
+  const left = [];
+  for (const payload of q) {
+    try { await postToSheet(payload); }
+    catch { left.push(payload); }
+  }
+  saveQueue(left);
+}
+
+window.addEventListener('online', flushQueue);
+
+/* ─── RENDER ─── */
+const app = document.getElementById('app');
+
+function render() {
+  const prev = app.querySelector('.screen');
+  if (prev) prev.remove();
+  ({ start, name: nameEntry, question, result, scoreboard })[S.screen]();
+}
+
+const LOGO_HERO = '<img class="logo-hero" src="assets/bursa-logo-ink.svg" alt="Bursa">';
+const LOGO_MARK = '<img class="logo-mark" src="assets/bursa-logo-ink.svg" alt="Bursa">';
+
+/* START */
+function start() {
+  const s = mk('div', 'screen start-screen');
+  s.innerHTML = `
+    ${LOGO_HERO}
+    <h1 class="display d-xl">Kvíz</h1>
+    <p class="eyebrow">Maso · Oheň · Pivo</p>
+    <p class="lede">Šest otázek o pivu, mase a Burse. Na každou máš ${TIME_LIMIT} sekund — čím dřív odpovíš, tím víc bodů získáš.</p>
+    <div class="btn-row">
+      <button class="btn btn-xl btn-primary" id="bStart">Začít →</button>
+      <button class="btn btn-xl" id="bStartSB">Žebříček</button>
+    </div>
+    <button class="btn btn-md" id="bInstall">Nainstalovat aplikaci ↓</button>
+  `;
+  app.appendChild(s);
+  s.querySelector('#bStart').onclick   = () => { S.screen = 'name'; render(); };
+  s.querySelector('#bStartSB').onclick = () => { S.screen = 'scoreboard'; render(); };
+  wireInstallButton(s.querySelector('#bInstall'));
+}
+
+/* NAME */
+function nameEntry() {
+  const s = mk('div', 'screen');
+  s.style.gap = '3vh';
+  s.innerHTML = `
+    <h1 class="display d-lg">Jak ti máme říkat?</h1>
+    <div class="rule"></div>
+    <input id="nInput" class="name-input" type="text" maxlength="24"
+           autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"
+           placeholder="tvoje jméno" value="${esc(S.name)}">
+    <button class="btn btn-xl btn-primary" id="bBegin" ${S.name.trim() ? '' : 'disabled'}>Pokračovat →</button>
+    <button class="btn btn-md" id="bBack">Zpět</button>
+  `;
+  app.appendChild(s);
+
+  const inp = s.querySelector('#nInput');
+  const btn = s.querySelector('#bBegin');
+  inp.oninput   = () => { S.name = inp.value; btn.disabled = !inp.value.trim(); };
+  inp.onkeydown = e => { if (e.key === 'Enter' && inp.value.trim()) go(); };
+  btn.onclick   = go;
+  s.querySelector('#bBack').onclick = () => { S.screen = 'start'; render(); };
+  setTimeout(() => inp.focus(), 60);
+
+  function go() {
+    if (!inp.value.trim()) return;
+    S.name = inp.value.trim();
+    resetQuiz();
+    S.screen = 'question';
+    render();
+  }
+}
+
+/* QUESTION */
+function question() {
+  const q = QS[S.curQ];
+  const s = mk('div', 'screen question-screen');
+  s.innerHTML = `
+    <div class="q-topbar">
+      ${LOGO_MARK}
+      <div class="q-topbar-mid">
+        <span class="q-num">Otázka ${S.curQ + 1} / ${QS.length}</span>
+        <span class="q-pts">${q.pts} ${bodu(q.pts)}</span>
+      </div>
+      <button class="btn-abandon" id="bAbandon">✕ Ukončit</button>
+    </div>
+
+    <div class="timer-row">
+      <span class="timer-count" id="timerCount">${TIME_LIMIT}</span>
+      <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+    </div>
+
+    <div class="q-body">
+      <p class="q-text">${esc(q.text)}</p>
+      <div class="q-options-grid" id="optGrid">
+        ${q.opts.map((o, i) => `
+          <button class="opt-btn" data-i="${i}" ${S.answered ? 'disabled' : ''}>
+            <span class="opt-letter">${LETTERS[i]}</span>
+            <span class="opt-text">${esc(o)}</span>
+          </button>`).join('')}
+      </div>
+    </div>
+
+    <div class="q-footer" id="qFooter">
+      <p class="feedback-text" id="fb"></p>
+      <button class="btn btn-md btn-primary btn-next" id="bNext">
+        ${S.curQ < QS.length - 1 ? 'Další →' : 'Výsledek →'}
+      </button>
+    </div>
+  `;
+  app.appendChild(s);
+
+  if (S.answered) applyHighlight(s, q, S.chosen);
+
+  s.querySelector('#bAbandon').onclick = () => {
+    stopAllSounds(); S.name = ''; resetQuiz(); S.screen = 'start'; render();
+  };
+  s.querySelectorAll('.opt-btn').forEach(b => {
+    b.onclick = () => answer(s, q, +b.dataset.i);
+  });
+  s.querySelector('#bNext').onclick = advance;
+  if (!S.answered) startTimer(s, q);
+}
+
+function answer(s, q, idx) {
+  if (S.answered) return;
+  clearInterval(S.timerInterval);
+  stopAllSounds();
+  S.answered = true; S.chosen = idx;
+
+  const ok    = idx === q.correct;
+  const bonus = ok ? S.secondsLeft * 3 : 0;
+  if (ok) { S.score += q.pts + bonus; S.correct++; }
+
+  s.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+  applyHighlight(s, q, idx);
+
+  const total = q.pts + bonus;
+  const note  = q.note ? `<span class="fb-note">${esc(q.note)}</span>` : '';
+  const fb    = s.querySelector('#fb');
+
+  if (ok) {
+    playSound('correct');
+    fb.innerHTML = `<span class="fb-head">Správně!</span> +${total} ${bodu(total)} — ${q.pts} za odpověď, ${bonus} za zbývající čas (${S.secondsLeft} s).${note}`;
+  } else if (idx === -1) {
+    playSound('wrong');
+    fb.innerHTML = `<span class="fb-head">Čas vypršel!</span> Správná odpověď byla ${LETTERS[q.correct]} — ${esc(q.opts[q.correct])}.${note}`;
+  } else {
+    playSound('wrong');
+    fb.innerHTML = `<span class="fb-head">Špatně.</span> Správná odpověď byla ${LETTERS[q.correct]} — ${esc(q.opts[q.correct])}.${note}`;
+  }
+
+  fb.className = `feedback-text show ${ok ? 'correct' : 'wrong'}`;
+  s.querySelector('#qFooter').classList.add('armed');
+  s.querySelector('#bNext').classList.add('show');
+}
+
+function applyHighlight(s, q, chosen) {
+  const gotIt = chosen === q.correct;
+  s.querySelectorAll('.opt-btn').forEach((b, i) => {
+    if (i === q.correct)   b.classList.add(gotIt ? 'state-correct' : 'state-correct-reveal');
+    else if (i === chosen) b.classList.add('state-wrong');
+    else                   b.classList.add('state-dim');
+  });
+}
+
+function advance() {
+  clearInterval(S.timerInterval);
+  if (S.curQ < QS.length - 1) {
+    S.curQ++; S.answered = false; S.chosen = null;
+    S.screen = 'question'; render();
+  } else {
+    pushScore();
+    S.screen = 'result'; render();
+  }
+}
+
+function startTimer(s, q) {
+  S.secondsLeft = TIME_LIMIT;
+  clearInterval(S.timerInterval);
+  _soundTimer = setTimeout(() => playSound('countdown'), 1000);
+  S.timerInterval = setInterval(() => {
+    S.secondsLeft--;
+    const fill  = document.getElementById('timerFill');
+    const count = document.getElementById('timerCount');
+    const low   = S.secondsLeft <= 6;
+    if (fill)  { fill.style.width = (S.secondsLeft / TIME_LIMIT * 100) + '%'; fill.classList.toggle('low', low); }
+    if (count) { count.textContent = S.secondsLeft; count.classList.toggle('low', low); }
+    if (S.secondsLeft <= 0) {
+      clearInterval(S.timerInterval);
+      if (!S.answered) answer(s, q, -1);
+    }
+  }, 1000);
+}
+
+/* RESULT */
+function result() {
+  playSound('result');
+  const s = mk('div', 'screen');
+  s.style.gap = '2vh';
+  s.innerHTML = `
+    <h1 class="display d-lg">Hotovo</h1>
+    <p class="result-name">${esc(S.name)}</p>
+    <div class="result-score">${S.score}</div>
+    <p class="meta">základ je ${MAX_PTS} ${bodu(MAX_PTS)} + bonus za čas</p>
+    <div class="rule"></div>
+    <p class="result-correct">Správné odpovědi: <strong>${S.correct} / ${QS.length}</strong></p>
+    <div class="btn-row">
+      <button class="btn btn-md btn-primary" id="bSB">Žebříček →</button>
+      <button class="btn btn-md" id="bPA">Hrát znovu</button>
+    </div>
+  `;
+  app.appendChild(s);
+  s.querySelector('#bSB').onclick = () => { S.screen = 'scoreboard'; render(); };
+  s.querySelector('#bPA').onclick = playAgain;
+}
+
+/* SCOREBOARD */
+function scoreboard() {
+  const rows = loadScores();
+  const s    = mk('div', 'screen');
+  s.style.gap = '2.2vh';
+
+  let tbody = '';
+  if (!rows.length) {
+    tbody = `<tr><td colspan="4" class="sb-empty">Zatím žádné skóre — buď první!</td></tr>`;
+  } else {
+    rows.forEach((r, i) => {
+      const me   = i === S.meIdx ? 'me' : '';
+      const rank = i === 0 ? 'r1' : '';
+      tbody += `<tr class="${me} ${rank}">
+        <td>${i + 1}</td>
+        <td>${esc(r.name)}</td>
+        <td>${r.score}</td>
+        <td>${r.correct} / ${QS.length}</td>
+      </tr>`;
+    });
+  }
+
+  s.innerHTML = `
+    <h1 class="display d-lg">Žebříček</h1>
+    <div class="sb-wrap">
+      <table class="sb-table">
+        <thead>
+          <tr><th>#</th><th>Jméno</th><th>Body</th><th>Správně</th></tr>
+        </thead>
+        <tbody>${tbody}</tbody>
+      </table>
+    </div>
+    <button class="btn btn-md btn-primary" id="bPA">Hrát znovu →</button>
+  `;
+  app.appendChild(s);
+  s.querySelector('#bPA').onclick = playAgain;
+
+  const me = s.querySelector('.me');
+  if (me) setTimeout(() => me.scrollIntoView({ block: 'center', behavior: 'smooth' }), 120);
+}
+
+/* ─── HELPERS ─── */
+function playAgain() {
+  stopAllSounds();
+  S.name = ''; resetQuiz();
+  S.screen = 'start'; render();
+}
+
+function mk(tag, cls) {
+  const el = document.createElement(tag);
+  if (cls) el.className = cls;
+  return el;
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* ─── PWA INSTALL ─── */
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('bInstall');
+  if (btn) btn.classList.add('show');
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  const btn = document.getElementById('bInstall');
+  if (btn) btn.classList.remove('show');
+});
+
+function wireInstallButton(btn) {
+  if (!btn) return;
+  if (deferredPrompt) btn.classList.add('show');
+  btn.onclick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    btn.classList.remove('show');
+  };
+}
+
+/* ─── BOOT ─── */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => {});
+  });
+}
+
+flushQueue();
+render();
+</script>
+</body>
+</html>

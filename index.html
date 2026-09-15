@@ -1,8 +1,113 @@
 <!DOCTYPE html>
-<html>
+<html lang="cs">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=Mini-Secrets/">
-  <script>window.location.replace('Mini-Secrets/');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kvízy</title>
+  <link rel="icon" href="Bursa/assets/icon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#0A0A0A">
+  <style>
+    @font-face {
+      font-family: 'Archivo';
+      src: url('Bursa/fonts/archivo-var-latin-ext.woff2') format('woff2');
+      font-weight: 100 900; font-stretch: 62% 125%; font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+                     U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+                     U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: 'Archivo';
+      src: url('Bursa/fonts/archivo-var-latin.woff2') format('woff2');
+      font-weight: 100 900; font-stretch: 62% 125%; font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+                     U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+                     U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root { --paper: #F2F1EE; --ink: #0A0A0A; --ink-dim: #6E6E68; --mint: #00FA9E; }
+
+    html, body {
+      width: 100%; min-height: 100%;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Archivo', 'Helvetica Neue', Arial, system-ui, sans-serif;
+      font-stretch: 100%;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      min-height: 100vh; min-height: 100dvh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 2.4rem;
+      padding: 6vh 6vw;
+    }
+
+    h1 {
+      font-weight: 900; font-stretch: 125%;
+      text-transform: uppercase; letter-spacing: -0.015em;
+      line-height: 0.88;
+      font-size: clamp(2.2rem, 7vw, 5rem);
+      text-align: center;
+    }
+    .sub {
+      font-weight: 600; font-stretch: 105%;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      font-size: clamp(0.7rem, 1.4vw, 0.95rem);
+      color: var(--ink-dim);
+      text-align: center;
+      margin-top: -1.4rem;
+    }
+
+    .cards { display: flex; gap: 1.4rem; flex-wrap: wrap; justify-content: center; width: 100%; }
+
+    .card {
+      flex: 1 1 280px;
+      max-width: 380px;
+      border: 2px solid var(--ink);
+      padding: 2rem 1.6rem;
+      display: flex; flex-direction: column; gap: 0.9rem;
+      text-decoration: none;
+      color: var(--ink);
+      background: var(--paper);
+      transition: background 0.14s, transform 0.08s;
+    }
+    .card:hover  { background: var(--mint); }
+    .card:active { transform: translateY(2px); }
+
+    .card-name {
+      font-weight: 900; font-stretch: 118%;
+      text-transform: uppercase; letter-spacing: 0.01em;
+      line-height: 1;
+      font-size: clamp(1.4rem, 3vw, 2.1rem);
+    }
+    .card-desc { font-weight: 400; font-size: 0.95rem; line-height: 1.5; }
+    .card-go {
+      font-weight: 800; font-stretch: 112%;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      font-size: 0.85rem;
+      margin-top: 0.4rem;
+    }
+  </style>
 </head>
+<body>
+<div class="wrap">
+  <h1>Kvízy</h1>
+  <p class="sub">Vyber akci</p>
+  <div class="cards">
+    <a class="card" href="Bursa/">
+      <span class="card-name">Bursa</span>
+      <span class="card-desc">Maso, oheň, pivo. Šest otázek v češtině — instalovatelná aplikace.</span>
+      <span class="card-go">Spustit →</span>
+    </a>
+    <a class="card" href="Mini-Secrets/">
+      <span class="card-name">Secrets of Prague</span>
+      <span class="card-desc">The IMS evening quiz — seven questions in English.</span>
+      <span class="card-go">Spustit →</span>
+    </a>
+  </div>
+</div>
+</body>
 </html>
