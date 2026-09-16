@@ -544,9 +544,10 @@ function stopAllSounds() {
 
 /* ─── STATE ─── */
 let S = {
-  screen:        'start',  // start | name | question | result | scoreboard
+  screen:        'start',  // start | name | email | question | result | scoreboard
   deck:          [],       // shuffled copy of QS for the current playthrough
   name:          '',
+  email:         '',
   curQ:          0,
   score:         0,
   correct:       0,
@@ -563,6 +564,7 @@ function resetQuiz() {
   S.secondsLeft = 0;
   S.curQ = 0; S.score = 0; S.correct = 0;
   S.answered = false; S.chosen = null;
+  S.email = '';
   S.deck = buildDeck();
 }
 
@@ -604,7 +606,7 @@ function pushScore() {
   if (rows.length > 100) rows.length = 100;
   localStorage.setItem(STORE_KEY, JSON.stringify(rows));
   S.meIdx = rows.findIndex(r => r.name === S.name && r.score === S.score && r.correct === S.correct);
-  sendToSheet({ name: S.name, score: S.score, correct: S.correct });
+  sendToSheet({ name: S.name, email: S.email, score: S.score, correct: S.correct });
 }
 
 /* ─── SHEET SYNC + OFFLINE QUEUE ───
@@ -662,12 +664,12 @@ const cornerLogo = document.getElementById('corner-logo');
 /* Screens that show the bottom-centre wordmark. The start screen is excluded
    because it already carries the big hero lockup, and the question screen
    because it carries the black mark in its top bar. */
-const LOGO_SCREENS = new Set(['name', 'result', 'scoreboard']);
+const LOGO_SCREENS = new Set(['name', 'email', 'result', 'scoreboard']);
 
 function render() {
   const prev = app.querySelector('.screen');
   if (prev) prev.remove();
-  ({ start, name: nameEntry, question, result, scoreboard })[S.screen]();
+  ({ start, name: nameEntry, email: emailEntry, question, result, scoreboard })[S.screen]();
   cornerLogo.hidden = !LOGO_SCREENS.has(S.screen);
 }
 
@@ -721,6 +723,40 @@ function nameEntry() {
     if (!inp.value.trim()) return;
     S.name = inp.value.trim();
     resetQuiz();
+    S.screen = 'email';
+    render();
+  }
+}
+
+/* EMAIL */
+function emailEntry() {
+  const s = mk('div', 'screen');
+  s.style.gap = '3vh';
+  s.innerHTML = `
+    <h1 class="display d-lg">Kam ti pošleme výsledky?</h1>
+    <div class="rule"></div>
+    <p class="lede">Ozveme se jen s výsledky kvízu a pozvánkou na další akci v Burse.</p>
+    <input id="eInput" class="name-input" type="email" maxlength="120"
+           autocomplete="email" autocorrect="off" autocapitalize="off" spellcheck="false"
+           placeholder="tvuj@email.cz" value="${esc(S.email)}">
+    <button class="btn btn-xl btn-primary" id="bGo" ${S.email.trim() ? '' : 'disabled'}>Začít kvíz →</button>
+    <button class="btn btn-md" id="bBack">Zpět</button>
+  `;
+  app.appendChild(s);
+
+  const inp = s.querySelector('#eInput');
+  const btn = s.querySelector('#bGo');
+  inp.oninput   = () => { S.email = inp.value; btn.disabled = !inp.value.trim(); };
+  inp.onkeydown = e => { if (e.key === 'Enter' && inp.value.trim()) go(); };
+  btn.onclick   = go;
+  /* Zpět matters more here than on the name screen: there is no skip, so this is
+     the only way out for someone who will not leave an address. */
+  s.querySelector('#bBack').onclick = () => { S.screen = 'name'; render(); };
+  setTimeout(() => inp.focus(), 60);
+
+  function go() {
+    if (!inp.value.trim()) return;
+    S.email = inp.value.trim();
     S.screen = 'question';
     render();
   }

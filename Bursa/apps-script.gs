@@ -29,11 +29,22 @@
  * Deploy → Manage deployments → pencil icon → Version: New version → Deploy.
  * Editing and saving alone does NOT update the live /exec URL.
  *
- * Columns written: Timestamp | Name | Score | Correct
- * (The Prague quiz's sheet also had an Email column; Bursa drops that step.)
+ * ── ADDING THE EMAIL COLUMN TO A SHEET THAT ALREADY HAS ROWS ───────────────
+ * Do this BEFORE deploying this version, or every existing row is misread -
+ * the old Score column would be returned as Email and Correct as Score:
+ *   1. Right-click column C (Score) → Insert 1 column left.
+ *   2. Type Email into C1 and bold it to match the other headers.
+ * sheet_() only writes headers when the sheet is completely empty, so it will
+ * not fix an existing header row by itself.
+ *
+ * Columns written: Timestamp | Name | Email | Score | Correct
+ * (Same layout as the Prague quiz's sheet.)
+ *
+ * The email is written to the Sheet but deliberately NOT returned by doGet:
+ * the projector scoreboard is public and has no business showing addresses.
  */
 
-var HEADERS = ['Timestamp', 'Name', 'Score', 'Correct'];
+var HEADERS = ['Timestamp', 'Name', 'Email', 'Score', 'Correct'];
 var MAX_ROWS_RETURNED = 100;
 
 /** Receives one finished game from the quiz. */
@@ -53,9 +64,12 @@ function doPost(e) {
     }
     var data = JSON.parse(e.postData.contents);
 
+    // A payload queued offline by an older build carries no email at all, and
+    // those flush after this version deploys - hence the null-tolerant read.
     sheet_().appendRow([
       new Date(),
       String(data.name == null ? '' : data.name).slice(0, 64),
+      String(data.email == null ? '' : data.email).slice(0, 120),
       Number(data.score) || 0,
       Number(data.correct) || 0
     ]);
@@ -78,8 +92,8 @@ function doGet() {
     .map(function (r) {
       return {
         name:    String(r[1]),
-        score:   Number(r[2]) || 0,
-        correct: Number(r[3]) || 0
+        score:   Number(r[3]) || 0,
+        correct: Number(r[4]) || 0
       };
     });
 

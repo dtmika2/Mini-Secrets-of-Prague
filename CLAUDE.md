@@ -68,7 +68,7 @@ own Sheet.
 ## Gotchas that will cost you time
 
 **Bump `CACHE` in `Bursa/sw.js` on every content change.** Otherwise installed clients keep serving
-the old shell. Currently `bursa-v6`. Users need no action beyond reopening the app while online -
+the old shell. Currently `bursa-v8`. Users need no action beyond reopening the app while online -
 navigations are network-first, so the fresh `index.html` (which carries all CSS and JS inline)
 arrives on the first launch, and `skipWaiting()`/`clients.claim()` swap the worker immediately.
 Clearing old caches does not touch localStorage, so scores survive an update.
@@ -99,6 +99,11 @@ load, so seeding `bursaPendingScores_v1` will POST junk rows into the live leade
 - **Questions are authored with the correct answer first** (`correct: 0`) for readability;
   `buildDeck()` shuffles the options per playthrough and remaps `correct`. Keep that convention when
   editing `QS` - do not hand-shuffle the source.
+- **Both apps collect a player email between the name screen and the first question.** It is
+  POSTed to the Sheet but deliberately never written to localStorage and never returned by
+  `doGet`, so no address reaches the projector board or a shared tablet's local leaderboard.
+  Prague's step is optional (a SKIP button); Bursa's is required. Both sheets are
+  `Timestamp | Name | Email | Score | Correct`.
 - **The in-app leaderboard is local-only by design.** Only `scoreboard.html` queries the Sheet, so
   with several tablets each shows just its own players while the projector shows everyone. This is
   known and accepted, not a bug to fix.
