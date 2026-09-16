@@ -68,7 +68,7 @@ own Sheet.
 ## Gotchas that will cost you time
 
 **Bump `CACHE` in `Bursa/sw.js` on every content change.** Otherwise installed clients keep serving
-the old shell. Currently `bursa-v8`. Users need no action beyond reopening the app while online -
+the old shell. Currently `bursa-v9`. Users need no action beyond reopening the app while online -
 navigations are network-first, so the fresh `index.html` (which carries all CSS and JS inline)
 arrives on the first launch, and `skipWaiting()`/`clients.claim()` swap the worker immediately.
 Clearing old caches does not touch localStorage, so scores survive an update.
